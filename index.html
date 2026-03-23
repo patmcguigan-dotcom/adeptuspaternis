@@ -16,44 +16,63 @@
             overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite;
         }
         
-        #leaderboard {
-            position: absolute; top: 45px; left: 20px; width: 220px;
-            background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41;
-            padding: 15px; z-index: 7500; font-size: 11px;
+        /* --- UI OVERLAYS --- */
+        .overlay-screen { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 9999; display: flex; justify-content: center; align-items: center; 
+            flex-direction: column; background: radial-gradient(circle, #051505 0%, #010103 100%); 
+            transition: opacity 0.5s, visibility 0.5s;
         }
-        #leaderboard h3 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #00ff41; padding-bottom: 5px; }
+        .terminal-border { border: 2px solid #00ff41; padding: 30px; background: rgba(0, 10, 0, 0.9); text-align: center; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); }
+        
+        button { background: transparent; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        button:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
+        .player-btn { padding: 12px; margin: 5px; width: 280px; display: block; }
+
+        /* --- HUD ELEMENTS --- */
+        #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; }
+        #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 40s linear infinite; font-size: 14px; letter-spacing: 2px; }
+
+        #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; }
+        #leaderboard h3 { margin: 0 0 10px 0; font-size: 14px; border-bottom: 1px solid #00ff41; padding-bottom: 5px; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
 
-        #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #051505 0%, #010103 100%); z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .terminal-border { border: 2px solid #00ff41; padding: 40px; background: rgba(0, 10, 0, 0.8); }
-        #enter-btn { background: transparent; border: 2px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; padding: 20px 40px; display: flex; flex-direction: column; align-items: center; text-transform: uppercase; }
-        #enter-btn:hover { background: #00ff41; color: #000; }
-
-        #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; }
-        #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 35s linear infinite; font-size: 14px; letter-spacing: 2px; }
-
-        #archive-btn { position: absolute; top: 45px; right: 20px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; color: #00ff41; padding: 8px 15px; font-family: inherit; cursor: pointer; z-index: 7500; font-size: 11px; }
+        #archive-btn { position: absolute; top: 45px; right: 20px; padding: 8px 15px; z-index: 7500; font-size: 11px; }
 
         #info-box { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: rgba(2, 5, 2, 0.98); border: 1px solid #00ff41; padding: 25px; display: none; z-index: 6000; }
-        #info-box h2 { margin: 0 0 10px 0; font-size: 1.6em; text-transform: uppercase; border-bottom: 1px solid #00ff41; }
-        .rule-box { background: rgba(0, 255, 65, 0.1); padding: 12px; border-left: 4px solid #00ff41; margin-top: 15px; font-size: 0.95em; color: #eee; }
+        #info-box h2 { margin: 0 0 10px 0; letter-spacing: 2px; }
+        .invasion-btn { background: #ff0000; color: #fff; border: none; padding: 15px; width: 100%; margin-top: 15px; font-weight: bold; }
 
-        #archive-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9000; display: none; flex-direction: column; align-items: center; padding-top: 60px; }
-        .archive-slate { width: 95%; max-width: 850px; background: #050505; border: 2px solid #00ff41; padding: 30px; color: #00ff41; overflow-y: auto; max-height: 80vh; }
+        .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9500; display: none; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; }
+        .slate-box { width: 90%; max-width: 800px; background: #050505; border: 2px solid #00ff41; padding: 30px; color: #00ff41; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { border-bottom: 2px solid #00ff41; padding: 10px; text-align: left; font-size: 0.8em; text-transform: uppercase; }
-        td { padding: 12px 10px; border-bottom: 1px solid #004411; font-size: 0.9em; }
+        th, td { padding: 12px; border-bottom: 1px solid #004411; text-align: left; font-size: 0.9em; }
+
+        #instructions { position: absolute; bottom: 10px; left: 10px; font-size: 9px; color: #004411; pointer-events: none; }
     </style>
 </head>
-<body>
+<body onkeydown="checkAdminKey(event)">
 
-    <div id="splash-screen">
+    <div id="splash-screen" class="overlay-screen">
         <div class="terminal-border">
-            <button id="enter-btn" onclick="enterMap()">
-                <span style="font-size: 2em; font-weight: bold; letter-spacing: 4px;">Adeptus Paternis</span>
-                <span style="font-size: 1.1em; font-style: italic;">Order of the Fathers</span>
-            </button>
+            <h1 style="letter-spacing: 5px;">Adeptus Paternis</h1>
+            <button id="enter-btn" style="padding: 20px 40px;" onclick="showPlayerSelect()">Initiate Aegis Protocol</button>
         </div>
+    </div>
+
+    <div id="player-select" class="overlay-screen" style="visibility: hidden; opacity: 0;">
+        <div class="terminal-border">
+            <h2 style="border-bottom: 1px solid #00ff41; padding-bottom: 10px;">Select Commander</h2>
+            <button class="player-btn" onclick="setCommander('Aliks')">Aliks - Adeptus Astartes</button>
+            <button class="player-btn" onclick="setCommander('Kieran')">Kieran - T'au Empire</button>
+            <button class="player-btn" onclick="setCommander('Josh')">Josh - Hive Fleet</button>
+            <button class="player-btn" onclick="setCommander('Neil')">Neil - Craftworld</button>
+            <button class="player-btn" onclick="setCommander('Pat')">Pat - Necron Dynasty</button>
+        </div>
+    </div>
+
+    <div id="war-log-container">
+        <div id="war-log-text">SYSTEM STATUS: THIS IS THE WAR LOG, THERE HAS BEEN NO CONQUEST YET SO THERE IS NOTHING TO REPORT. // COGITATOR LINK STABLE //</div>
     </div>
 
     <div id="leaderboard">
@@ -61,62 +80,124 @@
         <div id="rankings-list"></div>
     </div>
 
-    <div id="war-log-container">
-        <div id="war-log-text">SYSTEM STATUS: THIS IS THE WAR LOG, THERE HAS BEEN NO CONQUEST YET SO THERE IS NOTHING TO REPORT. // COGITATOR LINK STABLE // </div>
+    <button id="archive-btn" onclick="toggleModal('archive-overlay')">Archives [REC]</button>
+
+    <div id="archive-overlay" class="fullscreen-modal">
+        <div class="slate-box">
+            <h1 style="text-align: center;">Battle History: Sector 41-G6</h1>
+            <table>
+                <thead><tr><th>Planet</th><th>Winner</th><th>Loser</th><th>Score</th></tr></thead>
+                <tbody id="battle-rows"><tr><td colspan="4" style="text-align:center; opacity: 0.5;">[ NO LOGS FOUND ]</td></tr></tbody>
+            </table>
+            <button onclick="toggleModal('archive-overlay')" style="width:100%; margin-top:20px; padding: 15px;">Return</button>
+        </div>
     </div>
 
-    <button id="archive-btn" onclick="toggleArchive()">Archives [REC]</button>
-
-    <div id="archive-overlay">
-        <div class="archive-slate">
-            <h1 style="text-align: center; border-bottom: 3px double #00ff41; padding-bottom: 10px; text-transform: uppercase;">Battle History: Sector 41-G6</h1>
-            <table id="archive-table">
-                <thead><tr><th>Planet</th><th>Winner</th><th>Loser</th><th>Score</th><th>Temporal Stamp</th></tr></thead>
-                <tbody id="battle-rows"><tr><td colspan="5" style="text-align:center; opacity: 0.4;">[ NO LOGS FOUND ]</td></tr></tbody>
-            </table>
-            <button onclick="toggleArchive()" style="width:100%; background:#00ff41; color:#000; border:none; padding:15px; margin-top:30px; font-family:inherit; font-weight:bold; cursor:pointer;">DISMISS ARCHIVE</button>
+    <div id="admin-vault" class="fullscreen-modal" style="background: rgba(10,0,0,0.98);">
+        <div class="slate-box" style="border-color: #ff0000; color: #ff0000;">
+            <h1 style="text-align: center;">STRATEGOS COMMAND VAULT</h1>
+            <div id="invasion-queue"><p style="text-align: center; opacity: 0.5;">Scanning Warp for signals...</p></div>
+            <button onclick="toggleModal('admin-vault')" style="width:100%; margin-top:20px; padding: 15px; border-color: red; color: red;">Exit Vault</button>
         </div>
     </div>
 
     <div id="info-box">
-        <div id="faction-label" style="display: inline-block; padding: 5px 12px; border: 1px solid #00ff41; margin-bottom: 12px; font-size: 0.85em; font-weight: bold; text-transform: uppercase;">STATUS: PENDING</div>
-        <h2 id="planet-name">IDENTIFYING...</h2>
+        <div id="faction-label" style="display: inline-block; padding: 5px 12px; border: 1px solid #00ff41; margin-bottom: 12px; font-size: 0.8em; font-weight: bold; text-transform: uppercase;">STATUS</div>
+        <h2 id="planet-name">WORLD</h2>
         <p id="planet-desc">Establishing Vox-link...</p>
-        <div class="rule-box">
-            <strong style="color: #00ff41;">TACTICAL DATA:</strong><br>
+        <div style="background: rgba(0, 255, 65, 0.1); padding: 12px; border-left: 4px solid #00ff41; margin-top: 15px; font-size: 0.95em;">
+            <strong style="color: #00ff41;">PLANETARY TACTICAL DATA:</strong><br>
             <span id="planet-rule">Awaiting decryption...</span>
         </div>
-        <button onclick="document.getElementById('info-box').style.display='none'" style="width:100%; background:transparent; color:#00ff41; border:1px solid #00ff41; padding:12px; margin-top:20px; cursor:pointer; font-family: inherit;">PURGE DATA-SLATE</button>
+        <button id="attack-btn" class="invasion-btn" onclick="declareInvasion()">DECLARE INVASION</button>
+        <button onclick="document.getElementById('info-box').style.display='none'" style="width:100%; background:transparent; color:#00ff41; border:1px solid #00ff41; padding:10px; margin-top:10px;">PURGE DATA-SLATE</button>
     </div>
+
+    <div id="instructions" onclick="handleAdminTap()">COGITATOR OMNISSIAH-G6 // [TAP 5X FOR VAULT]</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        function enterMap() { document.getElementById('splash-screen').style.opacity = '0'; setTimeout(() => { document.getElementById('splash-screen').style.visibility = 'hidden'; }, 500); }
-        function toggleArchive() { const over = document.getElementById('archive-overlay'); over.style.display = (over.style.display === 'flex') ? 'none' : 'flex'; }
+        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbw-XsWG5xIYioQJhxQ4fh2PL7Abph64FxLoG6r6g1Iyz4F8jotcBoSpOIepHOmccGn7/exec"; 
 
+        let currentCommander = "";
+        let selectedPlanet = "";
+        let adminKeySequence = "";
+        let tapCount = 0;
+
+        function showPlayerSelect() {
+            document.getElementById('splash-screen').style.display = 'none';
+            const pSelect = document.getElementById('player-select');
+            pSelect.style.visibility = 'visible'; pSelect.style.opacity = '1';
+        }
+
+        function setCommander(name) {
+            currentCommander = name;
+            const pSelect = document.getElementById('player-select');
+            pSelect.style.opacity = '0';
+            setTimeout(() => { pSelect.style.display = 'none'; pSelect.style.pointerEvents = 'none'; }, 500);
+            updateLeaderboard();
+        }
+
+        function toggleModal(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === 'flex') { el.style.display = 'none'; } 
+            else { el.style.display = 'flex'; if (id === 'admin-vault') updateAdminPanel(); }
+        }
+
+        function checkAdminKey(e) {
+            adminKeySequence += e.key;
+            if (adminKeySequence.includes("1169")) { toggleModal('admin-vault'); adminKeySequence = ""; }
+        }
+        function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; } }
+
+        async function declareInvasion() {
+            const btn = document.getElementById('attack-btn');
+            btn.innerText = "TRANSMITTING..."; btn.disabled = true;
+            try {
+                await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ player: currentCommander, target: selectedPlanet }) });
+                alert("VOX SUCCESS: High Command notified of invasion on " + selectedPlanet);
+                document.getElementById('info-box').style.display = 'none';
+            } catch (e) { alert("VOX JAMMED: Signal failed."); }
+            finally { btn.innerText = "DECLARE INVASION"; btn.disabled = false; }
+        }
+
+        async function updateAdminPanel() {
+            const container = document.getElementById('invasion-queue');
+            try {
+                const response = await fetch(VOX_LINK_URL);
+                const data = await response.json();
+                const logs = data.slice(1).reverse();
+                container.innerHTML = logs.map(r => `
+                    <div style="border-bottom: 1px solid #440000; padding: 10px;">
+                        <strong>${r[1]}</strong> targeting <strong>${r[2]}</strong><br>
+                        <small style="opacity:0.5;">${new Date(r[0]).toLocaleString()}</small>
+                    </div>`).join('') || "No active signals.";
+            } catch (e) { container.innerHTML = "Link to Archive failed."; }
+        }
+
+        // --- MAP ENGINE ---
         const BATTLE_HISTORY = [];
         const PLANET_DATA = [
-            { name: "T'au", size: 3.6, dist: 28, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "🏛️", rule: "Markerlight Calibration: Re-roll one Hit roll of 1 per phase.", moons: 2 },
-            { name: "Vior'la", size: 3.4, dist: 45, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "⚙️", rule: "Rapid Deployment: +1\" Move to one Infantry unit in Round 1.", moons: 0 },
-            { name: "Macragge", size: 4.9, dist: 65, color: 0xffff00, player: "Aliks", faction: "Space Marines", icon: "🏛️", rule: "Ultramar Discipline: Re-roll one failed Battle-shock test per battle.", moons: 1 },
-            { name: "Phall", size: 3.2, dist: 85, color: 0xffff00, player: "Aliks", faction: "Space Marines", icon: "⚙️", rule: "Dorn's Bulwark: Gain Benefit of Cover if stationary.", moons: 0 },
-            { name: "Tyran Primus", size: 3.5, dist: 110, color: 0xff00ff, player: "Josh", faction: "Tyranids", icon: "💀", rule: "Lurking Horror: -1 to enemy Charge rolls against objectives.", moons: 3 },
-            { name: "Octarius", size: 4.2, dist: 135, color: 0xff00ff, player: "Josh", faction: "Tyranids", icon: "💀", rule: "Spores in the Air: One unit gains Stealth in Round 1.", moons: 2 },
-            { name: "Solemnace", size: 3.7, dist: 165, color: 0x00ff00, player: "Pat", faction: "Necrons", icon: "⚙️", rule: "Ancient Archives: One Battle Tactic Stratagem for 0CP per battle.", moons: 1 },
-            { name: "Damnos", size: 3.4, dist: 190, color: 0x00ff00, player: "Pat", faction: "Necrons", icon: "❄️", rule: "Slow Awakening: Re-roll one Reanimation Protocols roll per battle.", moons: 0 },
-            { name: "Biel-Tan Outpost", size: 5.3, dist: 220, color: 0x320064, player: "Neil", faction: "Aeldari", icon: "🌿", rule: "Way of the Warrior: +1 to Advance rolls for one unit per turn.", moons: 1 },
-            { name: "Iyanden Outpost", size: 5.5, dist: 250, color: 0x320064, player: "Neil", faction: "Aeldari", icon: "❄️", rule: "Wraith-Sight: One unit automatically passes Battle-shock once per battle.", moons: 0 },
-            { name: "Mars", size: 7.0, dist: 290, color: 0xff4500, player: "None", faction: "Neutral", icon: "⚙️", rule: "Forge-Code: One Vehicle regains 1 Wound per turn.", moons: 2 },
-            { name: "Armageddon", size: 3.8, dist: 330, color: 0x8b4513, player: "None", faction: "Neutral", icon: "🏛️", rule: "Waste Scavengers: Re-roll attack count for one weapon per battle.", moons: 1 },
-            { name: "Nocturne", size: 6.6, dist: 370, color: 0x2f4f4f, player: "None", faction: "Neutral", icon: "💀", rule: "Promethium Reserve: Re-roll one Wound roll of 1 for Melta/Torrent.", moons: 1 },
-            { name: "Necromunda", size: 5.4, dist: 410, color: 0xcd853f, player: "None", faction: "Neutral", icon: "🏛️", rule: "Grit and Grime: One Infantry unit gains 6+ FNP for one phase.", moons: 0 }
+            { name: "T'au", size: 3.6, dist: 28, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "🏛️", rule: "Markerlight Calibration: Re-roll one Hit roll of 1 per phase." },
+            { name: "Vior'la", size: 3.4, dist: 45, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "⚙️", rule: "Rapid Deployment: +1\" Move to one Infantry unit in Round 1." },
+            { name: "Macragge", size: 4.9, dist: 65, color: 0xffff00, player: "Aliks", faction: "Space Marines", icon: "🏛️", rule: "Ultramar Discipline: Re-roll one failed Battle-shock test per battle." },
+            { name: "Phall", size: 3.2, dist: 85, color: 0xffff00, player: "Aliks", faction: "Space Marines", icon: "⚙️", rule: "Dorn's Bulwark: Gain Benefit of Cover if stationary." },
+            { name: "Tyran Primus", size: 3.5, dist: 110, color: 0xff00ff, player: "Josh", faction: "Tyranids", icon: "💀", rule: "Lurking Horror: -1 to enemy Charge rolls against objectives." },
+            { name: "Octarius", size: 4.2, dist: 135, color: 0xff00ff, player: "Josh", faction: "Tyranids", icon: "💀", rule: "Spores in the Air: One unit gains Stealth in Round 1." },
+            { name: "Solemnace", size: 3.7, dist: 165, color: 0x00ff00, player: "Pat", faction: "Necrons", icon: "⚙️", rule: "Ancient Archives: One Battle Tactic Stratagem for 0CP per battle." },
+            { name: "Damnos", size: 3.4, dist: 190, color: 0x00ff00, player: "Pat", faction: "Necrons", icon: "❄️", rule: "Slow Awakening: Re-roll one Reanimation Protocols roll per battle." },
+            { name: "Biel-Tan Outpost", size: 5.3, dist: 220, color: 0x320064, player: "Neil", faction: "Aeldari", icon: "🌿", rule: "Way of the Warrior: +1 to Advance rolls for one unit per turn." },
+            { name: "Iyanden Outpost", size: 3.5, dist: 250, color: 0x320064, player: "Neil", faction: "Aeldari", icon: "❄️", rule: "Wraith-Sight: One unit automatically passes Battle-shock once per battle." },
+            { name: "Mars", size: 7.0, dist: 290, color: 0xff4500, player: "None", faction: "Neutral", icon: "⚙️", rule: "Forge-Code: One Vehicle regains 1 Wound per turn." },
+            { name: "Armageddon", size: 3.8, dist: 330, color: 0x8b4513, player: "None", faction: "Neutral", icon: "🏛️", rule: "Waste Scavengers: Re-roll attack count for one weapon per battle." },
+            { name: "Nocturne", size: 6.6, dist: 370, color: 0x2f4f4f, player: "None", faction: "Neutral", icon: "💀", rule: "Promethium Reserve: Re-roll one Wound roll of 1 for Melta/Torrent." },
+            { name: "Necromunda", size: 5.4, dist: 410, color: 0xcd853f, player: "None", faction: "Neutral", icon: "🏛️", rule: "Grit and Grime: One Infantry unit gains 6+ FNP for one phase." }
         ];
 
-        // --- UI UTILS ---
-        const players = ["Aliks", "Kieran", "Josh", "Neil", "Pat"];
         function updateLeaderboard() {
+            const players = ["Aliks", "Kieran", "Josh", "Neil", "Pat"];
             let scores = players.map(name => {
                 let planetCount = PLANET_DATA.filter(p => p.player === name).length;
                 let combatPoints = BATTLE_HISTORY.filter(b => b.winner === name).reduce((acc, curr) => acc + parseInt(curr.score.split('-')[0]), 0);
@@ -124,155 +205,60 @@
             }).sort((a,b) => b.power - a.power);
             document.getElementById('rankings-list').innerHTML = scores.map(s => `<div class="stat-row"><span>${s.name.toUpperCase()}</span> <span>${s.power} PL</span></div>`).join('');
         }
-        updateLeaderboard();
 
-        // --- THREE.JS ENGINE ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        camera.position.set(0, 500, 1000);
-        controls.enableDamping = true;
+        camera.position.set(0, 500, 1000); controls.enableDamping = true;
 
         scene.add(new THREE.AmbientLight(0x224422, 0.5));
-        const sunLight = new THREE.PointLight(0x00ff41, 5, 2000);
-        scene.add(sunLight);
+        scene.add(new THREE.PointLight(0x00ff41, 5, 2000));
         scene.add(new THREE.Mesh(new THREE.SphereGeometry(18, 32, 32), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })));
 
-        const planetMeshes = [];
-        const planetGroups = [];
-        const moonGroups = [];
-        const neutralReticles = [];
-        const signalLabels = [];
-
-        // Function to create "SIGNAL LOST" text sprite
-        function createSignalSprite() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 256; canvas.height = 64;
-            ctx.fillStyle = 'rgba(0,0,0,0)'; ctx.fillRect(0,0,256,64);
-            ctx.font = 'bold 32px "Special Elite", monospace';
-            ctx.fillStyle = '#00ffff'; ctx.textAlign = 'center';
-            ctx.fillText('SIGNAL LOST', 128, 40);
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-            return new THREE.Sprite(material);
-        }
-
+        const planetMeshes = []; const planetGroups = [];
         PLANET_DATA.forEach((data) => {
-            const group = new THREE.Group();
-            scene.add(group);
-            planetGroups.push(group);
+            const group = new THREE.Group(); scene.add(group); planetGroups.push(group);
             group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * (1 / (data.size * 0.8)) * (0.8 + Math.random() * 0.4);
-
             const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.4, data.dist + 0.4, 128), new THREE.MeshBasicMaterial({ color: 0x00ff77, side: THREE.DoubleSide }));
-            ring.rotation.x = Math.PI / 2;
-            scene.add(ring);
-
+            ring.rotation.x = Math.PI / 2; scene.add(ring);
             const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ color: data.color, emissive: data.color, emissiveIntensity: 0.4 }));
-            pMesh.position.x = data.dist;
-            pMesh.userData = data;
-            
-            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.2, 32, 32), new THREE.MeshBasicMaterial({ color: data.color, transparent: true, opacity: 0.15 })));
-
-            // --- NEUTRAL CALLOUTS ---
-            if (data.player === "None") {
-                // 1. Pulsing Reticle (Diamond/Octahedron)
-                const retGeo = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(data.size * 2, 0));
-                const retMat = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 });
-                const reticle = new THREE.LineSegments(retGeo, retMat);
-                pMesh.add(reticle);
-                neutralReticles.push(reticle);
-
-                // 2. Floating Label
-                const label = createSignalSprite();
-                label.position.set(data.dist, data.size + 15, 0); // Above planet
-                label.scale.set(40, 10, 1);
-                group.add(label); // Add to group so it orbits with the planet
-                signalLabels.push(label);
-            }
-
-            for(let i=0; i<data.moons; i++) {
-                const mPivot = new THREE.Group();
-                pMesh.add(mPivot);
-                const mMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size * 0.18, 8, 8), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true }));
-                mMesh.position.x = data.size + 2.5 + (i * 1.8);
-                mPivot.add(mMesh);
-                moonGroups.push({ pivot: mPivot, speed: 0.03 + Math.random() * 0.04 });
-            }
-
+            pMesh.position.x = data.dist; pMesh.userData = data;
             pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 4, 8, 8), new THREE.MeshBasicMaterial({ visible: false })));
-            group.add(pMesh);
-            planetMeshes.push(pMesh);
+            group.add(pMesh); planetMeshes.push(pMesh);
             group.rotation.y = Math.random() * Math.PI * 2;
         });
 
-        // Asteroid Belt & Stars
-        const astGeo = new THREE.BufferGeometry(); const astCoords = [];
-        for(let i=0; i<800; i++) { let r = 265 + Math.random()*20; let a = Math.random()*Math.PI*2; astCoords.push(Math.cos(a)*r, (Math.random()-0.5)*10, Math.sin(a)*r); }
-        astGeo.setAttribute('position', new THREE.Float32BufferAttribute(astCoords, 3));
-        scene.add(new THREE.Points(astGeo, new THREE.PointsMaterial({ color: 0x004411, size: 1.5 })));
-
-        const starGeo = new THREE.BufferGeometry(); const starCoords = [];
-        for(let i=0; i<3000; i++) starCoords.push((Math.random()-0.5)*6000, (Math.random()-0.5)*5000, (Math.random()-0.5)*6000);
-        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
-        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x004411, size: 2 })));
-
-        function handleSelect(clientX, clientY) {
-            if (document.getElementById('splash-screen').style.visibility !== 'hidden') return;
-            const mouse = new THREE.Vector2((clientX / window.innerWidth) * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);
+        window.addEventListener('pointerup', (u) => {
+            if (document.getElementById('splash-screen').style.display !== 'none' || document.getElementById('player-select').style.display !== 'none') return;
+            const mouse = new THREE.Vector2((u.clientX / window.innerWidth) * 2 - 1, -(u.clientY / window.innerHeight) * 2 + 1);
             const raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(planetMeshes, true);
             if (intersects.length > 0) {
-                const obj = intersects[0].object.userData.name ? intersects[0].object : intersects[0].object.parent;
-                const p = obj.userData;
-                const box = document.getElementById('info-box');
-                box.style.display = 'block';
+                const p = intersects[0].object.userData.name ? intersects[0].object.userData : intersects[0].object.parent.userData;
+                selectedPlanet = p.name;
+                const box = document.getElementById('info-box'); box.style.display = 'block';
                 document.getElementById('planet-name').innerHTML = `${p.icon} ${p.name}`;
-                document.getElementById('planet-desc').innerText = `SECTOR LOG: ${p.info || 'Establishing link...'}`;
+                document.getElementById('planet-desc').innerText = `SECTOR LOG: Owned by ${p.player}.`;
+                
+                // RESTORED: Rule decryption link
                 document.getElementById('planet-rule').innerText = p.rule;
-                const label = document.getElementById('faction-label');
-                label.innerText = `GOVERNOR: ${p.player.toUpperCase()} // STATUS: ${p.faction.toUpperCase()}`;
-                label.style.borderColor = `#${obj.material.color.getHexString()}`; label.style.color = `#${obj.material.color.getHexString()}`;
-            }
-        }
 
-        window.addEventListener('pointerdown', (e) => {
-            const sX = e.clientX, sY = e.clientY;
-            window.addEventListener('pointerup', function onUp(u) {
-                if (Math.sqrt(Math.pow(u.clientX-sX,2)+Math.pow(u.clientY-sY,2)) < 5) handleSelect(u.clientX, u.clientY);
-                window.removeEventListener('pointerup', onUp);
-            }, { once: true });
+                document.getElementById('attack-btn').style.display = (p.player === currentCommander) ? 'none' : 'block';
+                const label = document.getElementById('faction-label'); label.innerText = `STATUS: ${p.faction.toUpperCase()}`;
+            }
         });
 
         function animate() {
             requestAnimationFrame(animate);
             planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; });
-            moonGroups.forEach(m => { m.pivot.rotation.y += m.speed; });
-            
-            // Animation for Neutral callouts
-            const time = Date.now();
-            neutralReticles.forEach(r => {
-                const pulse = 1 + Math.sin(time * 0.005) * 0.2;
-                r.scale.set(pulse, pulse, pulse);
-                r.rotation.y += 0.01;
-            });
-            signalLabels.forEach(l => {
-                // Hovering bobble and flickering opacity
-                l.position.y += Math.sin(time * 0.002) * 0.05;
-                l.material.opacity = 0.5 + Math.random() * 0.5;
-            });
-
-            controls.update();
-            renderer.render(scene, camera);
+            controls.update(); renderer.render(scene, camera);
         }
-        animate();
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        animate(); updateLeaderboard();
     </script>
 </body>
 </html>
