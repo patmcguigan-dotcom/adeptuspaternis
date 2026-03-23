@@ -31,8 +31,8 @@
         #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
 
-        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; gap: 10px; z-index: 7500; }
-        .top-btns button { padding: 8px 15px; font-size: 11px; }
+        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; }
+        .top-btns button { padding: 8px 15px; font-size: 11px; width: 110px; }
 
         #info-box { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: rgba(2, 5, 2, 0.98); border: 1px solid #00ff41; padding: 25px; display: none; z-index: 6000; }
         .invasion-btn { background: #ff0000; color: #fff; border: none; padding: 15px; width: 100%; margin-top: 15px; font-weight: bold; }
@@ -40,7 +40,6 @@
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9500; display: none; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; }
         .slate-box { width: 90%; max-width: 800px; background: #050505; border: 2px solid #00ff41; padding: 30px; color: #00ff41; }
 
-        /* --- COGNITATOR BATTLE SLATE --- */
         #game-canvas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9600; border: 20px double #1a331a; box-sizing: border-box; touch-action: none; }
         #game-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9601; 
@@ -83,8 +82,8 @@
     <div id="leaderboard"><h3>Sector Supremacy</h3><div id="rankings-list"></div></div>
     
     <div class="top-btns">
-        <button id="minigame-btn" onclick="toggleMiniGame()">Void War [⚔️]</button>
-        <button id="archive-btn" onclick="toggleModal('archive-overlay')">Archives [REC]</button>
+        <button id="archive-btn" onclick="toggleModal('archive-overlay')">Archives</button>
+        <button id="minigame-btn" onclick="toggleMiniGame()">Void War</button>
     </div>
 
     <canvas id="game-canvas"></canvas>
@@ -185,10 +184,11 @@
                 const response = await fetch(VOX_LINK_URL);
                 const data = await response.json();
                 const logs = data.slice(1).reverse();
-                container.innerHTML = logs.map(r => `<div style="border-bottom: 1px solid #440000; padding: 10px;"><strong style="color:white;">${r[1]}</strong> targeting <strong style="color:white;">${r[2]}</strong><br><small style="opacity:0.5;">${new Date(r[0]).toLocaleString()}</small></div>`).join('') || "No active signals.";
+                container.innerHTML = logs.map(r => `<div style="border-bottom: 1px solid #440000; padding: 10px;"><strong style="color:white;">${r[1]}</strong> targeting <strong>${r[2]}</strong><br><small style="opacity:0.5;">${new Date(r[0]).toLocaleString()}</small></div>`).join('') || "No active signals.";
             } catch (e) { container.innerHTML = "Link failed."; }
         }
 
+        // --- MAP ENGINE ---
         const BATTLE_HISTORY = [];
         const PLANET_DATA = [
             { name: "T'au", size: 3.6, dist: 28, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "🏛️", rule: "Markerlight Calibration: Re-roll one Hit roll of 1 per phase." },
@@ -237,16 +237,52 @@
         scene.add(new THREE.AmbientLight(0x224422, 0.5));
         scene.add(new THREE.PointLight(0x00ff41, 5, 2000));
         scene.add(new THREE.Mesh(new THREE.SphereGeometry(18, 32, 32), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })));
+        
         const planetMeshes = []; const planetGroups = [];
+        const neutralReticles = []; // Store references for animation
+
         PLANET_DATA.forEach((data) => {
             const group = new THREE.Group(); scene.add(group); planetGroups.push(group);
             group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * (1 / (data.size * 0.8)) * (0.8 + Math.random() * 0.4);
             const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.4, data.dist + 0.4, 128), new THREE.MeshBasicMaterial({ color: 0x00ff77, side: THREE.DoubleSide }));
             ring.rotation.x = Math.PI / 2; scene.add(ring);
-            const tex = generateNoiseTexture(data.color);
-            const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ map: tex, bumpMap: tex, bumpScale: 0.5, emissive: data.color, emissiveIntensity: 0.3 }));
-            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.05, 12, 12), new THREE.MeshBasicMaterial({ color: data.color, wireframe: true, transparent: true, opacity: 0.15 })));
-            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.25, 32, 32), new THREE.MeshBasicMaterial({ color: data.color, transparent: true, opacity: 0.08, side: THREE.BackSide })));
+            
+            // --- LOGIC CHANGE 1: Color Override for Neutral ---
+            let planetColor = data.color;
+            let emissiveInt = 0.3;
+            if (data.player === "None") {
+                planetColor = 0x8B0000; // Shade of Red for unoccupied
+                emissiveInt = 0.5; // Slightly brighter base to make the red pop
+            }
+
+            const tex = generateNoiseTexture(planetColor);
+            const pMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(data.size, 32, 32), 
+                new THREE.MeshStandardMaterial({ 
+                    map: tex, bumpMap: tex, bumpScale: 0.5, 
+                    color: planetColor, // Use dynamic color
+                    emissive: planetColor, // Use dynamic color
+                    emissiveIntensity: emissiveInt 
+                })
+            );
+
+            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.05, 12, 12), new THREE.MeshBasicMaterial({ color: planetColor, wireframe: true, transparent: true, opacity: 0.15 })));
+            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.25, 32, 32), new THREE.MeshBasicMaterial({ color: planetColor, transparent: true, opacity: 0.08, side: THREE.BackSide })));
+
+            // --- LOGIC CHANGE 2: Vox-Distortion Highlight ---
+            if (data.player === "None") {
+                // Flickering diamond reticle (using Octahedron wireframe)
+                const reticleGeo = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(data.size * 1.8, 0));
+                const reticleMat = new THREE.LineBasicMaterial({ 
+                    color: 0xFF0000, // Bright Red Vox Signal
+                    transparent: true, 
+                    opacity: 0.5 
+                });
+                const reticle = new THREE.LineSegments(reticleGeo, reticleMat);
+                pMesh.add(reticle);
+                neutralReticles.push(reticle); // Save for animation
+            }
+
             pMesh.position.x = data.dist; pMesh.userData = data;
             pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 4, 8, 8), new THREE.MeshBasicMaterial({ visible: false })));
             group.add(pMesh); planetMeshes.push(pMesh);
@@ -272,11 +308,21 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            if (!isGameActive) { planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); controls.update(); renderer.render(scene, camera); }
+            if (!isGameActive) { 
+                planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
+                
+                // --- LOGIC CHANGE 3: Reticle Flicker ---
+                neutralReticles.forEach(r => {
+                    r.rotation.y += 0.01; // Slow rotation
+                    r.material.opacity = 0.3 + Math.random() * 0.4; // Dirty Vox Signal flicker
+                });
+
+                controls.update(); renderer.render(scene, camera); 
+            }
         }
         animate(); updateLeaderboard();
 
-        // --- MINI GAME: VOID WAR (ASTEROIDS CLONE) ---
+        // --- MINI GAME: VOID WAR ---
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         const keys = {};
@@ -285,7 +331,7 @@
             isGameActive = !isGameActive;
             canvas.style.display = isGameActive ? 'block' : 'none';
             document.getElementById('game-overlay').style.display = isGameActive ? 'block' : 'none';
-            document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle [ESC]' : 'Void War [⚔️]';
+            document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War';
             if (isGameActive) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; game.init(); requestAnimationFrame(gameLoop); }
         }
 
@@ -310,19 +356,15 @@
                 this.bullets.push({ x: this.ship.x + Math.cos(this.ship.angle) * this.ship.r, y: this.ship.y + Math.sin(this.ship.angle) * this.ship.r, angle: this.ship.angle, vX: Math.cos(this.ship.angle) * 12, vY: Math.sin(this.ship.angle) * 12, life: 50 });
             },
             update() {
-                // DESKTOP CONTROLS
                 if (keys['ArrowLeft'] || keys['KeyA']) this.ship.angle -= 0.08;
                 if (keys['ArrowRight'] || keys['KeyD']) this.ship.angle += 0.08;
                 if (keys['ArrowUp'] || keys['KeyW']) { this.ship.velX += Math.cos(this.ship.angle) * 0.25; this.ship.velY += Math.sin(this.ship.angle) * 0.25; } 
                 else { this.ship.velX *= 0.98; this.ship.velY *= 0.98; }
-                
                 this.ship.x += this.ship.velX; this.ship.y += this.ship.velY;
                 if (this.ship.x < 0) this.ship.x = canvas.width; else if (this.ship.x > canvas.width) this.ship.x = 0;
                 if (this.ship.y < 0) this.ship.y = canvas.height; else if (this.ship.y > canvas.height) this.ship.y = 0;
-
                 this.bullets.forEach((b, i) => { b.x += b.vX; b.y += b.vY; b.life--; if (b.life < 0) this.bullets.splice(i, 1); });
                 this.particles.forEach((p, i) => { p.x += p.vX; p.y += p.vY; p.life--; if (p.life < 0) this.particles.splice(i, 1); });
-
                 this.asteroids.forEach((a, i) => {
                     a.x += a.vX; a.y += a.vY;
                     if (a.x < 0) a.x = canvas.width; else if (a.x > canvas.width) a.x = 0;
@@ -346,16 +388,11 @@
                 grad.addColorStop(0, '#2a0a0a'); grad.addColorStop(0.5, '#0a1a0a'); grad.addColorStop(1, '#000000');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // Ship
                 ctx.save(); ctx.translate(this.ship.x, this.ship.y); ctx.rotate(this.ship.angle);
                 ctx.strokeStyle = '#00ff41'; ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(30, 0); ctx.lineTo(-10, -10); ctx.lineTo(-20, -15); ctx.lineTo(-25, 0);
-                ctx.lineTo(-20, 15); ctx.lineTo(-10, 10); ctx.closePath(); ctx.stroke();
-                ctx.fillStyle = 'rgba(0, 255, 65, 0.2)'; ctx.fill();
-                ctx.restore();
+                ctx.beginPath(); ctx.moveTo(30, 0); ctx.lineTo(-10, -10); ctx.lineTo(-20, -15); ctx.lineTo(-25, 0); ctx.lineTo(-20, 15); ctx.lineTo(-10, 10); ctx.closePath(); ctx.stroke();
+                ctx.fillStyle = 'rgba(0, 255, 65, 0.2)'; ctx.fill(); ctx.restore();
                 
-                // Enemies
                 this.asteroids.forEach(a => {
                     ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 1.5;
                     ctx.beginPath();
@@ -367,33 +404,24 @@
                     ctx.closePath(); ctx.stroke();
                 });
                 
-                // Beams
                 this.bullets.forEach(b => {
                     ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.angle);
                     ctx.fillStyle = '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff';
                     ctx.fillRect(0, -1, 20, 2); ctx.restore();
                 });
 
-                this.particles.forEach(p => {
-                    ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 30;
-                    ctx.fillRect(p.x, p.y, 2, 2); ctx.globalAlpha = 1;
-                });
+                this.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 30; ctx.fillRect(p.x, p.y, 2, 2); ctx.globalAlpha = 1; });
 
-                // HUD
                 ctx.fillStyle = '#00ff41'; ctx.font = '24px Special Elite'; ctx.textAlign = 'right';
                 ctx.fillText(`THREATS NEUTRALIZED: ${this.score}`, canvas.width - 50, 60);
                 
-                // EXIT BUTTON HUD
                 ctx.textAlign = 'left'; ctx.font = '16px Special Elite';
-                ctx.strokeStyle = '#00ff41'; ctx.strokeRect(30, 30, 200, 40);
-                ctx.fillText("[ ESC ] TERMINATE LINK", 45, 57);
+                ctx.strokeStyle = '#00ff41'; ctx.strokeRect(30, 30, 80, 40);
+                ctx.fillText("[ ESC ]", 42, 57);
 
-                // GOTHIC BORDERS
                 ctx.textAlign = 'center'; ctx.font = '30px Special Elite';
-                ctx.fillText("☠ ✠ ♰ ☠ ✠ ♰ ☠ ✠ ♰ ☠ ✠ ♰", canvas.width/2, 40);
                 ctx.fillText("☠ ✠ ♰ ☠ ✠ ♰ ☠ ✠ ♰ ☠ ✠ ♰", canvas.width/2, canvas.height - 20);
 
-                // TOUCH GUIDES
                 ctx.font = '10px Special Elite'; ctx.globalAlpha = 0.3;
                 ctx.fillText("[ NAVIGATION ZONE ]", canvas.width * 0.25, canvas.height - 60);
                 ctx.fillText("[ WEAPON ZONE ]", canvas.width * 0.75, canvas.height - 60);
@@ -401,39 +429,19 @@
             }
         };
 
-        // --- TOUCH / POINTER HANDLERS ---
         canvas.addEventListener('pointerdown', (e) => {
             if (!isGameActive) return;
-            
-            // 1. EXIT BUTTON DETECTION
-            if (e.clientX < 230 && e.clientY < 80) {
-                toggleMiniGame();
-                return;
-            }
-
-            // 2. RIGHT HALF = FIRE
-            if (e.clientX > window.innerWidth / 2) {
-                game.fire();
-            } 
-            // 3. LEFT HALF = MOVE
-            else {
-                keys['TouchMove'] = true;
-                handleTouchMove(e.clientX, e.clientY);
-            }
+            if (e.clientX < 120 && e.clientY < 80) { toggleMiniGame(); return; }
+            if (e.clientX > window.innerWidth / 2) { game.fire(); } 
+            else { keys['TouchMove'] = true; handleTouchMove(e.clientX, e.clientY); }
         });
 
-        canvas.addEventListener('pointermove', (e) => {
-            if (isGameActive && keys['TouchMove']) handleTouchMove(e.clientX, e.clientY);
-        });
-
+        canvas.addEventListener('pointermove', (e) => { if (isGameActive && keys['TouchMove']) handleTouchMove(e.clientX, e.clientY); });
         canvas.addEventListener('pointerup', () => { keys['TouchMove'] = false; });
 
         function handleTouchMove(tX, tY) {
-            // Calculate angle between ship and touch point
-            const dx = tX - game.ship.x;
-            const dy = tY - game.ship.y;
+            const dx = tX - game.ship.x; const dy = tY - game.ship.y;
             game.ship.angle = Math.atan2(dy, dx);
-            // Apply thrust
             game.ship.velX += Math.cos(game.ship.angle) * 0.3;
             game.ship.velY += Math.sin(game.ship.angle) * 0.3;
         }
