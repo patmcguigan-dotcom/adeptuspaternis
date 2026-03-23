@@ -16,20 +16,13 @@
             overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite;
         }
         
-        /* --- UI OVERLAYS --- */
-        .overlay-screen { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 9999; display: flex; justify-content: center; align-items: center; 
-            flex-direction: column; background: radial-gradient(circle, #051505 0%, #010103 100%); 
-            transition: opacity 0.5s, visibility 0.5s;
-        }
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; background: radial-gradient(circle, #051505 0%, #010103 100%); transition: opacity 0.5s, visibility 0.5s; }
         .terminal-border { border: 2px solid #00ff41; padding: 30px; background: rgba(0, 10, 0, 0.9); text-align: center; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); }
         
         button { background: transparent; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         button:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
         .player-btn { padding: 12px; margin: 5px; width: 280px; display: block; }
 
-        /* --- HUD ELEMENTS --- */
         #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; }
         #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 40s linear infinite; font-size: 14px; letter-spacing: 2px; }
 
@@ -40,14 +33,11 @@
         #archive-btn { position: absolute; top: 45px; right: 20px; padding: 8px 15px; z-index: 7500; font-size: 11px; }
 
         #info-box { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: rgba(2, 5, 2, 0.98); border: 1px solid #00ff41; padding: 25px; display: none; z-index: 6000; }
-        #info-box h2 { margin: 0 0 10px 0; letter-spacing: 2px; }
         .invasion-btn { background: #ff0000; color: #fff; border: none; padding: 15px; width: 100%; margin-top: 15px; font-weight: bold; }
 
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9500; display: none; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; }
         .slate-box { width: 90%; max-width: 800px; background: #050505; border: 2px solid #00ff41; padding: 30px; color: #00ff41; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border-bottom: 1px solid #004411; text-align: left; font-size: 0.9em; }
-
+        
         #instructions { position: absolute; bottom: 10px; left: 10px; font-size: 9px; color: #004411; pointer-events: none; }
     </style>
 </head>
@@ -55,8 +45,10 @@
 
     <div id="splash-screen" class="overlay-screen">
         <div class="terminal-border">
-            <h1 style="letter-spacing: 5px;">Adeptus Paternis</h1>
-            <button id="enter-btn" style="padding: 20px 40px;" onclick="showPlayerSelect()">Initiate Aegis Protocol</button>
+            <button id="enter-btn" style="padding: 25px 50px;" onclick="showPlayerSelect()">
+                <span style="font-size: 2em; font-weight: bold; letter-spacing: 4px; display: block;">Adeptus Paternis</span>
+                <span style="font-size: 1.1em; font-style: italic; opacity: 0.8; display: block; margin-top: 5px;">Order of the Fathers</span>
+            </button>
         </div>
     </div>
 
@@ -71,22 +63,16 @@
         </div>
     </div>
 
-    <div id="war-log-container">
-        <div id="war-log-text">SYSTEM STATUS: THIS IS THE WAR LOG, THERE HAS BEEN NO CONQUEST YET SO THERE IS NOTHING TO REPORT. // COGITATOR LINK STABLE //</div>
-    </div>
+    <div id="war-log-container"><div id="war-log-text">THIS IS THE WAR LOG, THERE HAS BEEN NO CONQUEST YET SO THERE IS NOTHING TO REPORT. // SYSTEM STATUS: NOMINAL //</div></div>
 
-    <div id="leaderboard">
-        <h3>Sector Supremacy</h3>
-        <div id="rankings-list"></div>
-    </div>
-
+    <div id="leaderboard"><h3>Sector Supremacy</h3><div id="rankings-list"></div></div>
     <button id="archive-btn" onclick="toggleModal('archive-overlay')">Archives [REC]</button>
 
     <div id="archive-overlay" class="fullscreen-modal">
         <div class="slate-box">
             <h1 style="text-align: center;">Battle History: Sector 41-G6</h1>
-            <table>
-                <thead><tr><th>Planet</th><th>Winner</th><th>Loser</th><th>Score</th></tr></thead>
+            <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
+                <thead><tr><th style="text-align:left; border-bottom:1px solid #00ff41;">Planet</th><th style="text-align:left; border-bottom:1px solid #00ff41;">Winner</th><th style="text-align:left; border-bottom:1px solid #00ff41;">Loser</th><th style="text-align:left; border-bottom:1px solid #00ff41;">Score</th></tr></thead>
                 <tbody id="battle-rows"><tr><td colspan="4" style="text-align:center; opacity: 0.5;">[ NO LOGS FOUND ]</td></tr></tbody>
             </table>
             <button onclick="toggleModal('archive-overlay')" style="width:100%; margin-top:20px; padding: 15px;">Return</button>
@@ -97,7 +83,10 @@
         <div class="slate-box" style="border-color: #ff0000; color: #ff0000;">
             <h1 style="text-align: center;">STRATEGOS COMMAND VAULT</h1>
             <div id="invasion-queue"><p style="text-align: center; opacity: 0.5;">Scanning Warp for signals...</p></div>
-            <button onclick="toggleModal('admin-vault')" style="width:100%; margin-top:20px; padding: 15px; border-color: red; color: red;">Exit Vault</button>
+            <div style="display:flex; gap:10px; margin-top:30px;">
+                <button onclick="purgeVoxRecords()" style="flex:1; border-color: red; color: red; padding: 15px; font-weight: bold;">PURGE ALL RECORDS</button>
+                <button onclick="toggleModal('admin-vault')" style="flex:1; border-color: #555; color: #555; padding: 15px;">Exit Vault</button>
+            </div>
         </div>
     </div>
 
@@ -159,8 +148,17 @@
                 await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ player: currentCommander, target: selectedPlanet }) });
                 alert("VOX SUCCESS: High Command notified of invasion on " + selectedPlanet);
                 document.getElementById('info-box').style.display = 'none';
-            } catch (e) { alert("VOX JAMMED: Signal failed."); }
+            } catch (e) { alert("VOX JAMMED."); }
             finally { btn.innerText = "DECLARE INVASION"; btn.disabled = false; }
+        }
+
+        async function purgeVoxRecords() {
+            if(!confirm("CONFIRM PURGE: This will wipe all current invasion signals from the warp. Proceed?")) return;
+            try {
+                await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: 'purge' }) });
+                alert("WARP PURGED. Cogitator buffer cleared.");
+                updateAdminPanel();
+            } catch(e) { alert("PURGE FAILED."); }
         }
 
         async function updateAdminPanel() {
@@ -171,10 +169,10 @@
                 const logs = data.slice(1).reverse();
                 container.innerHTML = logs.map(r => `
                     <div style="border-bottom: 1px solid #440000; padding: 10px;">
-                        <strong>${r[1]}</strong> targeting <strong>${r[2]}</strong><br>
+                        <strong style="color:white;">${r[1]}</strong> targeting <strong style="color:white;">${r[2]}</strong><br>
                         <small style="opacity:0.5;">${new Date(r[0]).toLocaleString()}</small>
                     </div>`).join('') || "No active signals.";
-            } catch (e) { container.innerHTML = "Link to Archive failed."; }
+            } catch (e) { container.innerHTML = "Link failed."; }
         }
 
         // --- MAP ENGINE ---
@@ -197,13 +195,31 @@
         ];
 
         function updateLeaderboard() {
-            const players = ["Aliks", "Kieran", "Josh", "Neil", "Pat"];
-            let scores = players.map(name => {
+            const playersList = ["Aliks", "Kieran", "Josh", "Neil", "Pat"];
+            let scores = playersList.map(name => {
                 let planetCount = PLANET_DATA.filter(p => p.player === name).length;
                 let combatPoints = BATTLE_HISTORY.filter(b => b.winner === name).reduce((acc, curr) => acc + parseInt(curr.score.split('-')[0]), 0);
                 return { name, power: (planetCount * 10) + Math.floor(combatPoints / 10) };
             }).sort((a,b) => b.power - a.power);
             document.getElementById('rankings-list').innerHTML = scores.map(s => `<div class="stat-row"><span>${s.name.toUpperCase()}</span> <span>${s.power} PL</span></div>`).join('');
+        }
+
+        // --- NEW: Procedural Noise Texture Helper ---
+        function generateNoiseTexture(colorBase) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            const imgData = ctx.createImageData(256, 256);
+            for (let i = 0; i < imgData.data.length; i += 4) {
+                const noise = Math.random() * 50;
+                const c = new THREE.Color(colorBase);
+                imgData.data[i] = (c.r * 255) - noise;
+                imgData.data[i+1] = (c.g * 255) - noise;
+                imgData.data[i+2] = (c.b * 255) - noise;
+                imgData.data[i+3] = 255;
+            }
+            ctx.putImageData(imgData, 0, 0);
+            return new THREE.CanvasTexture(canvas);
         }
 
         const scene = new THREE.Scene();
@@ -225,7 +241,24 @@
             group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * (1 / (data.size * 0.8)) * (0.8 + Math.random() * 0.4);
             const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.4, data.dist + 0.4, 128), new THREE.MeshBasicMaterial({ color: 0x00ff77, side: THREE.DoubleSide }));
             ring.rotation.x = Math.PI / 2; scene.add(ring);
-            const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ color: data.color, emissive: data.color, emissiveIntensity: 0.4 }));
+            
+            // Texture and Material
+            const tex = generateNoiseTexture(data.color);
+            const pMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(data.size, 32, 32), 
+                new THREE.MeshStandardMaterial({ 
+                    map: tex,
+                    bumpMap: tex,
+                    bumpScale: 0.5,
+                    emissive: data.color, 
+                    emissiveIntensity: 0.3
+                })
+            );
+
+            // Grids and Glow
+            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.05, 12, 12), new THREE.MeshBasicMaterial({ color: data.color, wireframe: true, transparent: true, opacity: 0.15 })));
+            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.25, 32, 32), new THREE.MeshBasicMaterial({ color: data.color, transparent: true, opacity: 0.08, side: THREE.BackSide })));
+
             pMesh.position.x = data.dist; pMesh.userData = data;
             pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 4, 8, 8), new THREE.MeshBasicMaterial({ visible: false })));
             group.add(pMesh); planetMeshes.push(pMesh);
@@ -244,10 +277,7 @@
                 const box = document.getElementById('info-box'); box.style.display = 'block';
                 document.getElementById('planet-name').innerHTML = `${p.icon} ${p.name}`;
                 document.getElementById('planet-desc').innerText = `SECTOR LOG: Owned by ${p.player}.`;
-                
-                // RESTORED: Rule decryption link
                 document.getElementById('planet-rule').innerText = p.rule;
-
                 document.getElementById('attack-btn').style.display = (p.player === currentCommander) ? 'none' : 'block';
                 const label = document.getElementById('faction-label'); label.innerText = `STATUS: ${p.faction.toUpperCase()}`;
             }
