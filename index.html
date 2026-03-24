@@ -20,28 +20,31 @@
         .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; background: radial-gradient(circle, #051505 0%, #010103 100%); transition: opacity 0.5s, visibility 0.5s; }
         .terminal-border { border: 2px solid #00ff41; padding: 30px; background: rgba(0, 10, 0, 0.9); text-align: center; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); }
         
-        button { background: transparent; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        button { background: transparent; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; position: relative; z-index: 7600; }
         button:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
         .player-btn { padding: 12px; margin: 5px; width: 280px; display: block; }
 
         #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; }
         #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 45s linear infinite; font-size: 14px; letter-spacing: 2px; }
 
-        #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; transition: opacity 0.3s; }
+        /* --- UI COMPONENTS --- */
+        #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; transition: opacity 0.4s, transform 0.4s; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
 
-        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; transition: opacity 0.3s; }
+        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; transition: opacity 0.4s, transform 0.4s; }
         .top-btns button { padding: 8px 15px; font-size: 11px; width: 110px; }
 
+        /* Culling State */
+        .ui-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(-10px); }
+
         #info-box { 
-            position: absolute; right: 20px; top: 160px; width: 300px; 
+            position: absolute; right: 20px; top: 45px; width: 300px; 
             background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; 
-            display: none; z-index: 6000; box-shadow: 0 0 20px rgba(0,255,65,0.1);
+            display: none; z-index: 8000; box-shadow: 0 0 20px rgba(0,255,65,0.1);
         }
         
         @media (max-width: 600px) {
             #info-box { width: 90%; left: 5%; right: auto; top: 40px; padding: 15px; }
-            #leaderboard, .top-btns { opacity: 0.2; pointer-events: none; }
         }
 
         .invasion-btn { background: #ff0000; color: #fff; border: none; padding: 12px; width: 100%; margin-top: 15px; font-weight: bold; }
@@ -53,7 +56,7 @@
         #game-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9601; pointer-events: none; }
         
         #instructions { position: absolute; bottom: 0; left: 0; padding: 30px; font-size: 9px; color: #003311; z-index: 8000; cursor: pointer; }
-        #reset-view { position: absolute; bottom: 40px; right: 20px; padding: 15px 25px; display: none; z-index: 7500; color: #ff0000; border-color: #ff0000; }
+        #reset-view { position: absolute; bottom: 40px; right: 20px; padding: 15px 25px; display: none; z-index: 7500; color: #ff4444; border-color: #ff4444; }
     </style>
 </head>
 <body onkeydown="handleGlobalKey(event)" onkeyup="handleGlobalKeyUp(event)">
@@ -81,7 +84,6 @@
     <div id="war-log-container"><div id="war-log-text">ESTABLISHING INTELLIGENCE UPLINK... [ STANDBY ] // </div></div>
 
     <div id="leaderboard"><h3>Sector Supremacy</h3><div id="rankings-list"></div></div>
-    
     <div class="top-btns">
         <button id="archive-btn" onclick="toggleModal('archive-overlay')">Archives</button>
         <button id="minigame-btn" onclick="toggleMiniGame()">Void War</button>
@@ -102,8 +104,7 @@
         <p id="limiter-msg" style="color: #ff4444; font-size: 0.7em; margin-top: 5px; display: none;">[ VOX LIMIT: ONE PER CYCLE ]</p>
     </div>
 
-    <button id="reset-view" onclick="resetSectorView()">[ EXIT ORBITAL SURVEY ]</button>
-
+    <button id="reset-view" onclick="resetSectorView()">[ EXIT SURVEY ]</button>
     <div id="instructions" onclick="handleAdminTap()">COGITATOR OMNISSIAH-G6 // [ACCESS VAULT]</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -118,10 +119,8 @@
         let adminKeySequence = "";
         let tapCount = 0;
         let isGameActive = false;
-        
-        // --- NAVIGATION STATE ---
         let isZoomed = false;
-        let isTransitioning = false; // PREVENTS RUBBER-BANDING
+        let isTransitioning = false;
         let targetPos = new THREE.Vector3(0, 500, 1000);
         let targetLookAt = new THREE.Vector3(0, 0, 0);
 
@@ -131,6 +130,15 @@
         function handleGlobalKey(e) { if (isGameActive && ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault(); adminKeySequence += e.key; if (adminKeySequence.includes("1169")) { toggleModal('admin-vault'); adminKeySequence = ""; } if (isGameActive) { if (e.code === "Space") game.fire(); keys[e.code] = true; } }
         function handleGlobalKeyUp(e) { if (isGameActive) keys[e.code] = false; }
         function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; } }
+
+        // --- UI CULLING LOGIC ---
+        function toggleMainUI(show) {
+            const elements = [document.getElementById('leaderboard'), document.querySelector('.top-btns')];
+            elements.forEach(el => {
+                if (show) el.classList.remove('ui-hidden');
+                else el.classList.add('ui-hidden');
+            });
+        }
 
         async function syncWarLog() {
             try {
@@ -219,15 +227,12 @@
             group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * (1 / (data.size * 0.8)) * (0.8 + Math.random() * 0.4);
             const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.4, data.dist + 0.4, 128), new THREE.MeshBasicMaterial({ color: 0x00ff77, side: THREE.DoubleSide }));
             ring.rotation.x = Math.PI / 2; scene.add(ring);
-            
             let planetColor = (data.player === "None") ? 0x8B0000 : data.color;
             const tex = generateNoiseTexture(planetColor);
             const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ map: tex, bumpMap: tex, bumpScale: 0.5, color: planetColor, emissive: planetColor, emissiveIntensity: (data.player === "None" ? 0.5 : 0.3) }));
             pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.05, 12, 12), new THREE.MeshBasicMaterial({ color: planetColor, wireframe: true, transparent: true, opacity: 0.15 })));
-            
             const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.1, 32, 32), new THREE.MeshPhongMaterial({ color: planetColor, transparent: true, opacity: 0.15, wireframe: true }));
             pMesh.add(cloud); atmospheres.push(cloud); 
-
             if (data.player === "None") {
                 const ret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.OctahedronGeometry(data.size * 1.8, 0)), new THREE.LineBasicMaterial({ color: 0xFF0000, transparent: true, opacity: 0.5 }));
                 pMesh.add(ret); neutralReticles.push(ret);
@@ -237,7 +242,11 @@
             group.rotation.y = Math.random() * Math.PI * 2;
         });
 
+        // --- FIXED POINTER LISTENER ---
         window.addEventListener('pointerup', (u) => {
+            // IGNORE IF CLICKING AN ACTUAL BUTTON (Fixes Archives/Void War)
+            if (u.target.tagName === 'BUTTON' || u.target.closest('#leaderboard')) return;
+            
             if (document.getElementById('splash-screen').style.display !== 'none' || document.getElementById('player-select').style.display !== 'none' || isGameActive) return;
             const mouse = new THREE.Vector2((u.clientX / window.innerWidth) * 2 - 1, -(u.clientY / window.innerHeight) * 2 + 1);
             const raycaster = new THREE.Raycaster(); raycaster.setFromCamera(mouse, camera);
@@ -252,7 +261,8 @@
                 targetPos.set(worldPos.x + 30, worldPos.y + 20, worldPos.z + 40);
                 
                 isZoomed = true;
-                isTransitioning = true; // TRIGGER FLY-BY
+                isTransitioning = true;
+                toggleMainUI(false); // CULL HUD
 
                 document.getElementById('info-box').style.display = 'block';
                 document.getElementById('reset-view').style.display = 'block';
@@ -268,11 +278,12 @@
 
         function resetSectorView() { 
             isZoomed = false; 
-            isTransitioning = true; // TRIGGER FLY-BACK
+            isTransitioning = true; 
             targetPos.set(0, 500, 1000); 
             targetLookAt.set(0, 0, 0); 
             document.getElementById('info-box').style.display = 'none'; 
             document.getElementById('reset-view').style.display = 'none'; 
+            toggleMainUI(true); // RESTORE HUD
         }
 
         function animate() {
@@ -281,24 +292,13 @@
                 planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
                 atmospheres.forEach(a => { a.rotation.y -= 0.005; }); 
                 neutralReticles.forEach(r => { r.rotation.y += 0.01; r.material.opacity = 0.3 + Math.random() * 0.4; });
-                
-                // ONLY LERP IF TRANSITIONING
-                if (isTransitioning) {
-                    camera.position.lerp(targetPos, 0.05);
-                    controls.target.lerp(targetLookAt, 0.05);
-                    
-                    // IF ARRIVED, RELEASE CONTROLS
-                    if (camera.position.distanceTo(targetPos) < 1) {
-                        isTransitioning = false;
-                    }
-                }
-
+                if (isTransitioning) { camera.position.lerp(targetPos, 0.05); controls.target.lerp(targetLookAt, 0.05); if (camera.position.distanceTo(targetPos) < 1) { isTransitioning = false; } }
                 controls.update(); renderer.render(scene, camera); 
             }
         }
         animate(); updateLeaderboard();
 
-        // --- VOID WAR (REMAINING CODE UNCHANGED) ---
+        // --- VOID WAR (UNCHANGED) ---
         const canvas = document.getElementById('game-canvas'); const ctx = canvas.getContext('2d'); const keys = {};
         function toggleMiniGame() { isGameActive = !isGameActive; canvas.style.display = isGameActive ? 'block' : 'none'; document.getElementById('game-overlay').style.display = isGameActive ? 'block' : 'none'; document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War'; if (isGameActive) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; game.init(); requestAnimationFrame(gameLoop); } }
         const game = {
