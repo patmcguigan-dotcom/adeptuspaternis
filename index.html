@@ -26,7 +26,7 @@
         .player-btn { padding: 12px; margin: 5px; width: 280px; display: block; }
 
         #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; }
-        #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 40s linear infinite; font-size: 14px; letter-spacing: 2px; }
+        #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 45s linear infinite; font-size: 14px; letter-spacing: 2px; }
 
         #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
@@ -41,16 +41,8 @@
         .slate-box { width: 90%; max-width: 800px; background: #050505; border: 2px solid #00ff41; padding: 30px; color: #00ff41; }
 
         #game-canvas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9600; border: 20px double #1a331a; box-sizing: border-box; touch-action: none; }
-        #game-overlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9601; 
-            pointer-events: none; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-            background-size: 100% 4px, 4px 100%;
-        }
-        #game-overlay::after {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.03) 3px);
-            animation: scanlineMove 10s linear infinite;
-        }
+        #game-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9601; pointer-events: none; }
+        #game-overlay::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.03) 3px); animation: scanlineMove 10s linear infinite; }
         
         #instructions { position: absolute; bottom: 10px; left: 10px; font-size: 9px; color: #004411; pointer-events: none; }
     </style>
@@ -77,7 +69,9 @@
         </div>
     </div>
 
-    <div id="war-log-container"><div id="war-log-text">THIS IS THE WAR LOG, THERE HAS BEEN NO CONQUEST YET SO THERE IS NOTHING TO REPORT. // SYSTEM STATUS: NOMINAL //</div></div>
+    <div id="war-log-container">
+        <div id="war-log-text">ESTABLISHING INTELLIGENCE UPLINK... SCANNING SECTOR VOID SIGNATURES... [ STANDBY ] // </div>
+    </div>
 
     <div id="leaderboard"><h3>Sector Supremacy</h3><div id="rankings-list"></div></div>
     
@@ -149,6 +143,7 @@
             pSelect.style.opacity = '0';
             setTimeout(() => { pSelect.style.display = 'none'; pSelect.style.pointerEvents = 'none'; }, 500);
             updateLeaderboard();
+            syncWarLog(); // CRITICAL: Re-sync intelligence the moment the player enters
         }
 
         function toggleModal(id) {
@@ -166,16 +161,59 @@
         function handleGlobalKeyUp(e) { if (isGameActive) keys[e.code] = false; }
         function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; } }
 
+        // --- INTELLIGENCE FEED LOGIC ---
+        const factionFlavor = {
+            "Aliks": "Adeptus Astartes strike forces have been detected near",
+            "Kieran": "T'au Empire vessel signatures have been seen near",
+            "Josh": "Tyranid Bio-fleet tendrils are entering the orbit of",
+            "Neil": "Aeldari Craftworld scouts have been spotted moving towards",
+            "Pat": "Necron Dynasty phalanxes are manifesting near"
+        };
+
+        async function syncWarLog() {
+            try {
+                const response = await fetch(VOX_LINK_URL);
+                const data = await response.json();
+                const logs = data.slice(1);
+                
+                let reportString = "SYSTEM STATUS: NOMINAL // COGITATOR LINK STABLE // ";
+                
+                if (logs.length > 0) {
+                    const recentSightings = logs.slice(-5).reverse();
+                    const newsItems = recentSightings.map(row => {
+                        const factionText = factionFlavor[row[1]] || `${row[1]} forces are near`;
+                        return `${factionText.toUpperCase()} ${row[2].toUpperCase()}`;
+                    });
+                    reportString += newsItems.join(" // ") + " // ";
+                } else {
+                    reportString += "NO RECENT XENOS OR RENEGADE ACTIVITY RECORDED // ";
+                }
+
+                document.getElementById('war-log-text').innerText = reportString;
+            } catch (e) {
+                console.log("War Log sync failed.");
+            }
+        }
+
+        // Run once on background, once on enter, then every minute
+        syncWarLog();
+        setInterval(syncWarLog, 60000);
+
         async function declareInvasion() {
             const btn = document.getElementById('attack-btn');
             btn.innerText = "TRANSMITTING..."; btn.disabled = true;
-            try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ player: currentCommander, target: selectedPlanet }) }); alert("VOX SUCCESS."); document.getElementById('info-box').style.display = 'none'; } 
+            try { 
+                await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ player: currentCommander, target: selectedPlanet }) }); 
+                alert("VOX SUCCESS."); 
+                document.getElementById('info-box').style.display = 'none';
+                syncWarLog(); // Immediate refresh after declaration
+            } 
             catch (e) { alert("VOX JAMMED."); } finally { btn.innerText = "DECLARE INVASION"; btn.disabled = false; }
         }
 
         async function purgeVoxRecords() {
             if(!confirm("CONFIRM PURGE?")) return;
-            try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: 'purge' }) }); alert("WARP PURGED."); updateAdminPanel(); } catch(e) { alert("FAILED."); }
+            try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: 'purge' }) }); alert("WARP PURGED."); updateAdminPanel(); syncWarLog(); } catch(e) { alert("FAILED."); }
         }
 
         async function updateAdminPanel() {
@@ -184,11 +222,10 @@
                 const response = await fetch(VOX_LINK_URL);
                 const data = await response.json();
                 const logs = data.slice(1).reverse();
-                container.innerHTML = logs.map(r => `<div style="border-bottom: 1px solid #440000; padding: 10px;"><strong style="color:white;">${r[1]}</strong> targeting <strong>${r[2]}</strong><br><small style="opacity:0.5;">${new Date(r[0]).toLocaleString()}</small></div>`).join('') || "No active signals.";
+                container.innerHTML = logs.map(r => `<div style="border-bottom: 1px solid #440000; padding: 10px;"><strong style="color:white;">${r[1]}</strong> targeting <strong style="color:white;">${r[2]}</strong><br><small style="opacity:0.5;">${new Date(r[0]).toLocaleString()}</small></div>`).join('') || "No active signals.";
             } catch (e) { container.innerHTML = "Link failed."; }
         }
 
-        // --- MAP ENGINE ---
         const BATTLE_HISTORY = [];
         const PLANET_DATA = [
             { name: "T'au", size: 3.6, dist: 28, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "🏛️", rule: "Markerlight Calibration: Re-roll one Hit roll of 1 per phase." },
@@ -239,7 +276,7 @@
         scene.add(new THREE.Mesh(new THREE.SphereGeometry(18, 32, 32), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })));
         
         const planetMeshes = []; const planetGroups = [];
-        const neutralReticles = []; // Store references for animation
+        const neutralReticles = [];
 
         PLANET_DATA.forEach((data) => {
             const group = new THREE.Group(); scene.add(group); planetGroups.push(group);
@@ -247,40 +284,22 @@
             const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.4, data.dist + 0.4, 128), new THREE.MeshBasicMaterial({ color: 0x00ff77, side: THREE.DoubleSide }));
             ring.rotation.x = Math.PI / 2; scene.add(ring);
             
-            // --- LOGIC CHANGE 1: Color Override for Neutral ---
-            let planetColor = data.color;
-            let emissiveInt = 0.3;
-            if (data.player === "None") {
-                planetColor = 0x8B0000; // Shade of Red for unoccupied
-                emissiveInt = 0.5; // Slightly brighter base to make the red pop
-            }
+            let planetColor = (data.player === "None") ? 0x8B0000 : data.color;
+            let emissiveInt = (data.player === "None") ? 0.5 : 0.3;
 
             const tex = generateNoiseTexture(planetColor);
             const pMesh = new THREE.Mesh(
                 new THREE.SphereGeometry(data.size, 32, 32), 
-                new THREE.MeshStandardMaterial({ 
-                    map: tex, bumpMap: tex, bumpScale: 0.5, 
-                    color: planetColor, // Use dynamic color
-                    emissive: planetColor, // Use dynamic color
-                    emissiveIntensity: emissiveInt 
-                })
+                new THREE.MeshStandardMaterial({ map: tex, bumpMap: tex, bumpScale: 0.5, color: planetColor, emissive: planetColor, emissiveIntensity: emissiveInt })
             );
 
             pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.05, 12, 12), new THREE.MeshBasicMaterial({ color: planetColor, wireframe: true, transparent: true, opacity: 0.15 })));
             pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.25, 32, 32), new THREE.MeshBasicMaterial({ color: planetColor, transparent: true, opacity: 0.08, side: THREE.BackSide })));
 
-            // --- LOGIC CHANGE 2: Vox-Distortion Highlight ---
             if (data.player === "None") {
-                // Flickering diamond reticle (using Octahedron wireframe)
                 const reticleGeo = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(data.size * 1.8, 0));
-                const reticleMat = new THREE.LineBasicMaterial({ 
-                    color: 0xFF0000, // Bright Red Vox Signal
-                    transparent: true, 
-                    opacity: 0.5 
-                });
-                const reticle = new THREE.LineSegments(reticleGeo, reticleMat);
-                pMesh.add(reticle);
-                neutralReticles.push(reticle); // Save for animation
+                const reticle = new THREE.LineSegments(reticleGeo, new THREE.LineBasicMaterial({ color: 0xFF0000, transparent: true, opacity: 0.5 }));
+                pMesh.add(reticle); neutralReticles.push(reticle);
             }
 
             pMesh.position.x = data.dist; pMesh.userData = data;
@@ -310,75 +329,40 @@
             requestAnimationFrame(animate);
             if (!isGameActive) { 
                 planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
-                
-                // --- LOGIC CHANGE 3: Reticle Flicker ---
-                neutralReticles.forEach(r => {
-                    r.rotation.y += 0.01; // Slow rotation
-                    r.material.opacity = 0.3 + Math.random() * 0.4; // Dirty Vox Signal flicker
-                });
-
+                neutralReticles.forEach(r => { r.rotation.y += 0.01; r.material.opacity = 0.3 + Math.random() * 0.4; });
                 controls.update(); renderer.render(scene, camera); 
             }
         }
         animate(); updateLeaderboard();
 
         // --- MINI GAME: VOID WAR ---
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
-        const keys = {};
-
+        const canvas = document.getElementById('game-canvas'); const ctx = canvas.getContext('2d'); const keys = {};
         function toggleMiniGame() {
-            isGameActive = !isGameActive;
-            canvas.style.display = isGameActive ? 'block' : 'none';
-            document.getElementById('game-overlay').style.display = isGameActive ? 'block' : 'none';
-            document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War';
+            isGameActive = !isGameActive; canvas.style.display = isGameActive ? 'block' : 'none'; document.getElementById('game-overlay').style.display = isGameActive ? 'block' : 'none'; document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War';
             if (isGameActive) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; game.init(); requestAnimationFrame(gameLoop); }
         }
-
         const game = {
-            ship: { x: 0, y: 0, r: 25, angle: 0, velX: 0, velY: 0 },
-            asteroids: [], bullets: [], particles: [], score: 0,
-            init() {
-                this.ship = { x: canvas.width / 2, y: canvas.height / 2, r: 25, angle: -Math.PI / 2, velX: 0, velY: 0 };
-                this.asteroids = []; this.bullets = []; this.particles = []; this.score = 0;
-                for (let i = 0; i < 6; i++) this.createAsteroid();
-            },
-            createAsteroid() {
-                let x, y; do { x = Math.random() * canvas.width; y = Math.random() * canvas.height; } while (Math.hypot(x - this.ship.x, y - this.ship.y) < 150);
-                this.asteroids.push({ x, y, r: 30 + Math.random() * 30, vX: (Math.random() - 0.5) * 1.5, vY: (Math.random() - 0.5) * 1.5, offset: Math.random() * 10 });
-            },
-            createExplosion(x, y, color) {
-                for(let i=0; i<15; i++) {
-                    this.particles.push({ x, y, vX: (Math.random()-0.5)*4, vY: (Math.random()-0.5)*4, life: 30, color: i % 2 === 0 ? '#ff4500' : '#ffffff' });
-                }
-            },
-            fire() {
-                this.bullets.push({ x: this.ship.x + Math.cos(this.ship.angle) * this.ship.r, y: this.ship.y + Math.sin(this.ship.angle) * this.ship.r, angle: this.ship.angle, vX: Math.cos(this.ship.angle) * 12, vY: Math.sin(this.ship.angle) * 12, life: 50 });
-            },
+            ship: { x: 0, y: 0, r: 25, angle: 0, velX: 0, velY: 0 }, asteroids: [], bullets: [], particles: [], score: 0,
+            init() { this.ship = { x: canvas.width / 2, y: canvas.height / 2, r: 25, angle: -Math.PI / 2, velX: 0, velY: 0 }; this.asteroids = []; this.bullets = []; this.particles = []; this.score = 0; for (let i = 0; i < 6; i++) this.createAsteroid(); },
+            createAsteroid() { let x, y; do { x = Math.random() * canvas.width; y = Math.random() * canvas.height; } while (Math.hypot(x - this.ship.x, y - this.ship.y) < 150); this.asteroids.push({ x, y, r: 30 + Math.random() * 30, vX: (Math.random() - 0.5) * 1.5, vY: (Math.random() - 0.5) * 1.5, offset: Math.random() * 10 }); },
+            createExplosion(x, y, color) { for(let i=0; i<15; i++) { this.particles.push({ x, y, vX: (Math.random()-0.5)*4, vY: (Math.random()-0.5)*4, life: 30, color: i % 2 === 0 ? '#ff4500' : '#ffffff' }); } },
+            fire() { this.bullets.push({ x: this.ship.x + Math.cos(this.ship.angle) * this.ship.r, y: this.ship.y + Math.sin(this.ship.angle) * this.ship.r, angle: this.ship.angle, vX: Math.cos(this.ship.angle) * 12, vY: Math.sin(this.ship.angle) * 12, life: 50 }); },
             update() {
-                if (keys['ArrowLeft'] || keys['KeyA']) this.ship.angle -= 0.08;
-                if (keys['ArrowRight'] || keys['KeyD']) this.ship.angle += 0.08;
-                if (keys['ArrowUp'] || keys['KeyW']) { this.ship.velX += Math.cos(this.ship.angle) * 0.25; this.ship.velY += Math.sin(this.ship.angle) * 0.25; } 
-                else { this.ship.velX *= 0.98; this.ship.velY *= 0.98; }
+                if (keys['ArrowLeft'] || keys['KeyA']) this.ship.angle -= 0.08; if (keys['ArrowRight'] || keys['KeyD']) this.ship.angle += 0.08;
+                if (keys['ArrowUp'] || keys['KeyW']) { this.ship.velX += Math.cos(this.ship.angle) * 0.25; this.ship.velY += Math.sin(this.ship.angle) * 0.25; } else { this.ship.velX *= 0.98; this.ship.velY *= 0.98; }
                 this.ship.x += this.ship.velX; this.ship.y += this.ship.velY;
                 if (this.ship.x < 0) this.ship.x = canvas.width; else if (this.ship.x > canvas.width) this.ship.x = 0;
                 if (this.ship.y < 0) this.ship.y = canvas.height; else if (this.ship.y > canvas.height) this.ship.y = 0;
                 this.bullets.forEach((b, i) => { b.x += b.vX; b.y += b.vY; b.life--; if (b.life < 0) this.bullets.splice(i, 1); });
                 this.particles.forEach((p, i) => { p.x += p.vX; p.y += p.vY; p.life--; if (p.life < 0) this.particles.splice(i, 1); });
                 this.asteroids.forEach((a, i) => {
-                    a.x += a.vX; a.y += a.vY;
-                    if (a.x < 0) a.x = canvas.width; else if (a.x > canvas.width) a.x = 0;
-                    if (a.y < 0) a.y = canvas.height; else if (a.y > canvas.height) a.y = 0;
+                    a.x += a.vX; a.y += a.vY; if (a.x < 0) a.x = canvas.width; else if (a.x > canvas.width) a.x = 0; if (a.y < 0) a.y = canvas.height; else if (a.y > canvas.height) a.y = 0;
                     if (Math.hypot(a.x - this.ship.x, a.y - this.ship.y) < a.r + this.ship.r) { this.createExplosion(this.ship.x, this.ship.y, '#fff'); setTimeout(() => this.init(), 100); }
                     this.bullets.forEach((b, bi) => {
                         if (Math.hypot(a.x - b.x, a.y - b.y) < a.r) {
                             this.score += 100; this.createExplosion(a.x, a.y, '#ff4500');
-                            if (a.r > 20) {
-                                this.asteroids.push({ x: a.x, y: a.y, r: a.r / 2, vX: (Math.random()-0.5)*3, vY: (Math.random()-0.5)*3, offset: Math.random()*10 });
-                                this.asteroids.push({ x: a.x, y: a.y, r: a.r / 2, vX: (Math.random()-0.5)*3, vY: (Math.random()-0.5)*3, offset: Math.random()*10 });
-                            }
-                            this.asteroids.splice(i, 1); this.bullets.splice(bi, 1);
-                            if (this.asteroids.length < 4) this.createAsteroid();
+                            if (a.r > 20) { this.asteroids.push({ x: a.x, y: a.y, r: a.r / 2, vX: (Math.random()-0.5)*3, vY: (Math.random()-0.5)*3, offset: Math.random()*10 }); this.asteroids.push({ x: a.x, y: a.y, r: a.r / 2, vX: (Math.random()-0.5)*3, vY: (Math.random()-0.5)*3, offset: Math.random()*10 }); }
+                            this.asteroids.splice(i, 1); this.bullets.splice(bi, 1); if (this.asteroids.length < 4) this.createAsteroid();
                         }
                     });
                 });
@@ -387,65 +371,20 @@
                 const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
                 grad.addColorStop(0, '#2a0a0a'); grad.addColorStop(0.5, '#0a1a0a'); grad.addColorStop(1, '#000000');
                 ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                ctx.save(); ctx.translate(this.ship.x, this.ship.y); ctx.rotate(this.ship.angle);
-                ctx.strokeStyle = '#00ff41'; ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.moveTo(30, 0); ctx.lineTo(-10, -10); ctx.lineTo(-20, -15); ctx.lineTo(-25, 0); ctx.lineTo(-20, 15); ctx.lineTo(-10, 10); ctx.closePath(); ctx.stroke();
-                ctx.fillStyle = 'rgba(0, 255, 65, 0.2)'; ctx.fill(); ctx.restore();
-                
-                this.asteroids.forEach(a => {
-                    ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    for(let i=0; i<8; i++) {
-                        let ang = (i / 8) * Math.PI * 2;
-                        let rad = a.r + (Math.sin(ang * 4 + a.offset) * 5);
-                        ctx.lineTo(a.x + Math.cos(ang) * rad, a.y + Math.sin(ang) * rad);
-                    }
-                    ctx.closePath(); ctx.stroke();
-                });
-                
-                this.bullets.forEach(b => {
-                    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.angle);
-                    ctx.fillStyle = '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff';
-                    ctx.fillRect(0, -1, 20, 2); ctx.restore();
-                });
-
+                ctx.save(); ctx.translate(this.ship.x, this.ship.y); ctx.rotate(this.ship.angle); ctx.strokeStyle = '#00ff41'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(30, 0); ctx.lineTo(-10, -10); ctx.lineTo(-20, -15); ctx.lineTo(-25, 0); ctx.lineTo(-20, 15); ctx.lineTo(-10, 10); ctx.closePath(); ctx.stroke(); ctx.fillStyle = 'rgba(0, 255, 65, 0.2)'; ctx.fill(); ctx.restore();
+                this.asteroids.forEach(a => { ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 1.5; ctx.beginPath(); for(let i=0; i<8; i++) { let ang = (i / 8) * Math.PI * 2; let rad = a.r + (Math.sin(ang * 4 + a.offset) * 5); ctx.lineTo(a.x + Math.cos(ang) * rad, a.y + Math.sin(ang) * rad); } ctx.closePath(); ctx.stroke(); });
+                this.bullets.forEach(b => { ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.angle); ctx.fillStyle = '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff'; ctx.fillRect(0, -1, 20, 2); ctx.restore(); });
                 this.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 30; ctx.fillRect(p.x, p.y, 2, 2); ctx.globalAlpha = 1; });
-
-                ctx.fillStyle = '#00ff41'; ctx.font = '24px Special Elite'; ctx.textAlign = 'right';
-                ctx.fillText(`THREATS NEUTRALIZED: ${this.score}`, canvas.width - 50, 60);
-                
-                ctx.textAlign = 'left'; ctx.font = '16px Special Elite';
-                ctx.strokeStyle = '#00ff41'; ctx.strokeRect(30, 30, 80, 40);
-                ctx.fillText("[ ESC ]", 42, 57);
-
-                ctx.textAlign = 'center'; ctx.font = '30px Special Elite';
-                ctx.fillText("☠ ✠ ♰ ☠ ✠ ♰ ☠ ✠ ♰ ☠ ✠ ♰", canvas.width/2, canvas.height - 20);
-
-                ctx.font = '10px Special Elite'; ctx.globalAlpha = 0.3;
-                ctx.fillText("[ NAVIGATION ZONE ]", canvas.width * 0.25, canvas.height - 60);
-                ctx.fillText("[ WEAPON ZONE ]", canvas.width * 0.75, canvas.height - 60);
-                ctx.globalAlpha = 1;
+                ctx.fillStyle = '#00ff41'; ctx.font = '24px Special Elite'; ctx.textAlign = 'right'; ctx.fillText(`THREATS NEUTRALIZED: ${this.score}`, canvas.width - 50, 60);
+                ctx.textAlign = 'left'; ctx.font = '16px Special Elite'; ctx.strokeStyle = '#00ff41'; ctx.strokeRect(30, 30, 80, 40); ctx.fillText("[ ESC ]", 42, 57);
+                ctx.textAlign = 'center'; ctx.font = '30px Special Elite'; ctx.fillText("☠ ✠ ♰ ☠ ✠ ♰ ☠ ✠ ♰ ☠ ✠ ♰", canvas.width/2, canvas.height - 20);
+                ctx.font = '10px Special Elite'; ctx.globalAlpha = 0.3; ctx.fillText("[ NAVIGATION ZONE ]", canvas.width * 0.25, canvas.height - 60); ctx.fillText("[ WEAPON ZONE ]", canvas.width * 0.75, canvas.height - 60); ctx.globalAlpha = 1;
             }
         };
-
-        canvas.addEventListener('pointerdown', (e) => {
-            if (!isGameActive) return;
-            if (e.clientX < 120 && e.clientY < 80) { toggleMiniGame(); return; }
-            if (e.clientX > window.innerWidth / 2) { game.fire(); } 
-            else { keys['TouchMove'] = true; handleTouchMove(e.clientX, e.clientY); }
-        });
-
+        canvas.addEventListener('pointerdown', (e) => { if (!isGameActive) return; if (e.clientX < 120 && e.clientY < 80) { toggleMiniGame(); return; } if (e.clientX > window.innerWidth / 2) { game.fire(); } else { keys['TouchMove'] = true; handleTouchMove(e.clientX, e.clientY); } });
         canvas.addEventListener('pointermove', (e) => { if (isGameActive && keys['TouchMove']) handleTouchMove(e.clientX, e.clientY); });
         canvas.addEventListener('pointerup', () => { keys['TouchMove'] = false; });
-
-        function handleTouchMove(tX, tY) {
-            const dx = tX - game.ship.x; const dy = tY - game.ship.y;
-            game.ship.angle = Math.atan2(dy, dx);
-            game.ship.velX += Math.cos(game.ship.angle) * 0.3;
-            game.ship.velY += Math.sin(game.ship.angle) * 0.3;
-        }
-
+        function handleTouchMove(tX, tY) { const dx = tX - game.ship.x; const dy = tY - game.ship.y; game.ship.angle = Math.atan2(dy, dx); game.ship.velX += Math.cos(game.ship.angle) * 0.3; game.ship.velY += Math.sin(game.ship.angle) * 0.3; }
         function gameLoop() { if (!isGameActive) return; game.update(); game.draw(); requestAnimationFrame(gameLoop); }
     </script>
 </body>
