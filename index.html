@@ -27,14 +27,24 @@
         #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; }
         #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 45s linear infinite; font-size: 14px; letter-spacing: 2px; }
 
-        #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; }
+        #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; transition: opacity 0.3s; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
 
-        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; }
+        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; transition: opacity 0.3s; }
         .top-btns button { padding: 8px 15px; font-size: 11px; width: 110px; }
 
-        #info-box { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: rgba(2, 5, 2, 0.98); border: 1px solid #00ff41; padding: 25px; display: none; z-index: 6000; }
-        .invasion-btn { background: #ff0000; color: #fff; border: none; padding: 15px; width: 100%; margin-top: 15px; font-weight: bold; }
+        #info-box { 
+            position: absolute; right: 20px; top: 160px; width: 300px; 
+            background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; 
+            display: none; z-index: 6000; box-shadow: 0 0 20px rgba(0,255,65,0.1);
+        }
+        
+        @media (max-width: 600px) {
+            #info-box { width: 90%; left: 5%; right: auto; top: 40px; padding: 15px; }
+            #leaderboard, .top-btns { opacity: 0.2; pointer-events: none; }
+        }
+
+        .invasion-btn { background: #ff0000; color: #fff; border: none; padding: 12px; width: 100%; margin-top: 15px; font-weight: bold; }
         .disabled-btn { background: #333 !important; color: #777 !important; border: 1px solid #555 !important; cursor: not-allowed !important; }
 
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9500; display: none; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; }
@@ -42,7 +52,8 @@
         #game-canvas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9600; border: 20px double #1a331a; box-sizing: border-box; touch-action: none; }
         #game-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9601; pointer-events: none; }
         
-        #instructions { position: absolute; bottom: 10px; left: 10px; font-size: 9px; color: #004411; pointer-events: none; }
+        #instructions { position: absolute; bottom: 0; left: 0; padding: 30px; font-size: 9px; color: #003311; z-index: 8000; cursor: pointer; }
+        #reset-view { position: absolute; bottom: 40px; right: 20px; padding: 15px 25px; display: none; z-index: 7500; color: #ff0000; border-color: #ff0000; }
     </style>
 </head>
 <body onkeydown="handleGlobalKey(event)" onkeyup="handleGlobalKeyUp(event)">
@@ -79,42 +90,21 @@
     <canvas id="game-canvas"></canvas>
     <div id="game-overlay"></div>
 
-    <div id="archive-overlay" class="fullscreen-modal">
-        <div class="slate-box">
-            <h1 style="text-align: center;">Battle History: Sector 41-G6</h1>
-            <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
-                <thead><tr><th style="text-align:left; border-bottom:1px solid #00ff41;">Planet</th><th style="text-align:left; border-bottom:1px solid #00ff41;">Winner</th><th style="text-align:left; border-bottom:1px solid #00ff41;">Loser</th><th style="text-align:left; border-bottom:1px solid #00ff41;">Score</th></tr></thead>
-                <tbody id="battle-rows"><tr><td colspan="4" style="text-align:center; opacity: 0.5;">[ NO LOGS FOUND ]</td></tr></tbody>
-            </table>
-            <button onclick="toggleModal('archive-overlay')" style="width:100%; margin-top:20px; padding: 15px;">Return</button>
-        </div>
-    </div>
-
-    <div id="admin-vault" class="fullscreen-modal" style="background: rgba(10,0,0,0.98);">
-        <div class="slate-box" style="border-color: #ff0000; color: #ff0000;">
-            <h1 style="text-align: center;">STRATEGOS COMMAND VAULT</h1>
-            <div id="invasion-queue"><p style="text-align: center; opacity: 0.5;">Scanning Warp...</p></div>
-            <div style="display:flex; gap:10px; margin-top:30px;">
-                <button onclick="purgeVoxRecords()" style="flex:1; border-color: red; color: red; padding: 15px; font-weight: bold;">PURGE ALL RECORDS</button>
-                <button onclick="toggleModal('admin-vault')" style="flex:1; border-color: #555; color: #555; padding: 15px;">Exit Vault</button>
-            </div>
-        </div>
-    </div>
-
     <div id="info-box">
-        <div id="faction-label" style="display: inline-block; padding: 5px 12px; border: 1px solid #00ff41; margin-bottom: 12px; font-size: 0.8em; font-weight: bold; text-transform: uppercase;">STATUS</div>
-        <h2 id="planet-name">WORLD</h2>
-        <p id="planet-desc">Establishing Vox-link...</p>
-        <div style="background: rgba(0, 255, 65, 0.1); padding: 12px; border-left: 4px solid #00ff41; margin-top: 15px; font-size: 0.95em;">
-            <strong style="color: #00ff41;">PLANETARY TACTICAL DATA:</strong><br>
-            <span id="planet-rule">Awaiting decryption...</span>
+        <div id="faction-label" style="font-size: 0.7em; border: 1px solid #00ff41; padding: 4px; display: inline-block; margin-bottom: 10px;">STATUS</div>
+        <h2 id="planet-name" style="margin: 0; font-size: 1.4em;">WORLD</h2>
+        <p id="planet-desc" style="font-size: 0.8em; opacity: 0.7;">Orbital Survey Active...</p>
+        <div style="background: rgba(0, 255, 65, 0.1); padding: 10px; border-left: 3px solid #00ff41; margin-top: 10px; font-size: 0.85em;">
+            <strong style="color: #00ff41;">TACTICAL DATA:</strong><br>
+            <span id="planet-rule">Awaiting...</span>
         </div>
         <button id="attack-btn" class="invasion-btn" onclick="declareInvasion()">DECLARE INVASION</button>
-        <p id="limiter-msg" style="color: #ff4444; font-size: 0.8em; margin-top: 10px; display: none;">[ VOX LIMIT REACHED: ONLY ONE INVASION ALLOWED PER CYCLE ]</p>
-        <button onclick="document.getElementById('info-box').style.display='none'" style="width:100%; background:transparent; color:#00ff41; border:1px solid #00ff41; padding:10px; margin-top:10px;">PURGE DATA-SLATE</button>
+        <p id="limiter-msg" style="color: #ff4444; font-size: 0.7em; margin-top: 5px; display: none;">[ VOX LIMIT: ONE PER CYCLE ]</p>
     </div>
 
-    <div id="instructions" onclick="handleAdminTap()">COGITATOR OMNISSIAH-G6 // [TAP 5X FOR VAULT]</div>
+    <button id="reset-view" onclick="resetSectorView()">[ EXIT ORBITAL SURVEY ]</button>
+
+    <div id="instructions" onclick="handleAdminTap()">COGITATOR OMNISSIAH-G6 // [ACCESS VAULT]</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
@@ -124,10 +114,13 @@
 
         let currentCommander = "";
         let selectedPlanet = "";
-        let activeInvaders = []; // TRACKS WHO HAS ALREADY INVADED
+        let activeInvaders = [];
         let adminKeySequence = "";
         let tapCount = 0;
         let isGameActive = false;
+        let isZoomed = false;
+        let targetPos = new THREE.Vector3(0, 500, 1000);
+        let targetLookAt = new THREE.Vector3(0, 0, 0);
 
         function showPlayerSelect() { document.getElementById('splash-screen').style.display = 'none'; const pSelect = document.getElementById('player-select'); pSelect.style.visibility = 'visible'; pSelect.style.opacity = '1'; }
         function setCommander(name) { currentCommander = name; const pSelect = document.getElementById('player-select'); pSelect.style.opacity = '0'; setTimeout(() => { pSelect.style.display = 'none'; pSelect.style.pointerEvents = 'none'; }, 500); updateLeaderboard(); syncWarLog(); }
@@ -136,19 +129,15 @@
         function handleGlobalKeyUp(e) { if (isGameActive) keys[e.code] = false; }
         function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; } }
 
-        // --- NEW: DYNAMIC INTELLIGENCE & LIMITER ---
-        const factionFlavor = { "Aliks": "Adeptus Astartes", "Kieran": "T'au Empire", "Josh": "Tyranid Bio-fleet", "Neil": "Aeldari Craftworld", "Pat": "Necron Dynasty" };
-
         async function syncWarLog() {
             try {
                 const response = await fetch(VOX_LINK_URL);
                 const data = await response.json();
                 const logs = data.slice(1);
-                activeInvaders = logs.map(row => row[1]); // UPDATE THE LIMITER LIST
-                
+                activeInvaders = logs.map(row => row[1]); 
                 let reportString = "SYSTEM STATUS: NOMINAL // COGITATOR LINK STABLE // ";
                 if (logs.length > 0) {
-                    const newsItems = logs.slice(-5).reverse().map(row => `${(factionFlavor[row[1]] || row[1]).toUpperCase()} SIGNATURES DETECTED NEAR ${row[2].toUpperCase()}`);
+                    const newsItems = logs.slice(-5).reverse().map(row => `${(row[1]).toUpperCase()} SIGNATURES DETECTED NEAR ${row[2].toUpperCase()}`);
                     reportString += newsItems.join(" // ") + " // ";
                 } else { reportString += "NO RECENT XENOS OR RENEGADE ACTIVITY RECORDED // "; }
                 document.getElementById('war-log-text').innerText = reportString;
@@ -157,10 +146,10 @@
         syncWarLog(); setInterval(syncWarLog, 60000);
 
         async function declareInvasion() {
-            if(activeInvaders.includes(currentCommander)) return; // Double protection
+            if(activeInvaders.includes(currentCommander)) return; 
             const btn = document.getElementById('attack-btn');
             btn.innerText = "TRANSMITTING..."; btn.disabled = true;
-            try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ player: currentCommander, target: selectedPlanet }) }); alert("VOX SUCCESS."); document.getElementById('info-box').style.display = 'none'; syncWarLog(); } 
+            try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ player: currentCommander, target: selectedPlanet }) }); alert("VOX SUCCESS."); document.getElementById('info-box').style.display = 'none'; syncWarLog(); resetSectorView(); } 
             catch (e) { alert("VOX JAMMED."); } finally { btn.innerText = "DECLARE INVASION"; btn.disabled = false; }
         }
 
@@ -216,28 +205,31 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        camera.position.set(0, 500, 1000); controls.enableDamping = true;
+        camera.position.copy(targetPos); controls.enableDamping = true;
         scene.add(new THREE.AmbientLight(0x224422, 0.5));
         scene.add(new THREE.PointLight(0x00ff41, 5, 2000));
         scene.add(new THREE.Mesh(new THREE.SphereGeometry(18, 32, 32), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })));
         
-        const planetMeshes = []; const planetGroups = []; const neutralReticles = [];
+        const planetMeshes = []; const planetGroups = []; const neutralReticles = []; const atmospheres = [];
         PLANET_DATA.forEach((data) => {
             const group = new THREE.Group(); scene.add(group); planetGroups.push(group);
             group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * (1 / (data.size * 0.8)) * (0.8 + Math.random() * 0.4);
             const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.4, data.dist + 0.4, 128), new THREE.MeshBasicMaterial({ color: 0x00ff77, side: THREE.DoubleSide }));
             ring.rotation.x = Math.PI / 2; scene.add(ring);
+            
             let planetColor = (data.player === "None") ? 0x8B0000 : data.color;
             const tex = generateNoiseTexture(planetColor);
             const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ map: tex, bumpMap: tex, bumpScale: 0.5, color: planetColor, emissive: planetColor, emissiveIntensity: (data.player === "None" ? 0.5 : 0.3) }));
             pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.05, 12, 12), new THREE.MeshBasicMaterial({ color: planetColor, wireframe: true, transparent: true, opacity: 0.15 })));
-            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.25, 32, 32), new THREE.MeshBasicMaterial({ color: planetColor, transparent: true, opacity: 0.08, side: THREE.BackSide })));
+            
+            const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.1, 32, 32), new THREE.MeshPhongMaterial({ color: planetColor, transparent: true, opacity: 0.15, wireframe: true }));
+            pMesh.add(cloud); atmospheres.push(cloud); // Track for counter-rotation
+
             if (data.player === "None") {
                 const ret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.OctahedronGeometry(data.size * 1.8, 0)), new THREE.LineBasicMaterial({ color: 0xFF0000, transparent: true, opacity: 0.5 }));
                 pMesh.add(ret); neutralReticles.push(ret);
             }
             pMesh.position.x = data.dist; pMesh.userData = data;
-            pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 4, 8, 8), new THREE.MeshBasicMaterial({ visible: false })));
             group.add(pMesh); planetMeshes.push(pMesh);
             group.rotation.y = Math.random() * Math.PI * 2;
         });
@@ -246,32 +238,46 @@
             if (document.getElementById('splash-screen').style.display !== 'none' || document.getElementById('player-select').style.display !== 'none' || isGameActive) return;
             const mouse = new THREE.Vector2((u.clientX / window.innerWidth) * 2 - 1, -(u.clientY / window.innerHeight) * 2 + 1);
             const raycaster = new THREE.Raycaster(); raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(planetMeshes, true);
+            
+            // PRECISION HITBOX: Only intersect meshes, not ghost hitboxes
+            const intersects = raycaster.intersectObjects(planetMeshes, false);
+            
             if (intersects.length > 0) {
-                const p = intersects[0].object.userData.name ? intersects[0].object.userData : intersects[0].object.parent.userData;
+                const obj = intersects[0].object;
+                const p = obj.userData;
                 selectedPlanet = p.name;
-                const box = document.getElementById('info-box'); box.style.display = 'block';
+                const worldPos = new THREE.Vector3(); obj.getWorldPosition(worldPos);
+                targetLookAt.copy(worldPos);
+                targetPos.set(worldPos.x + 30, worldPos.y + 20, worldPos.z + 40);
+                isZoomed = true;
+                document.getElementById('info-box').style.display = 'block';
+                document.getElementById('reset-view').style.display = 'block';
                 document.getElementById('planet-name').innerHTML = `${p.icon} ${p.name}`;
-                document.getElementById('planet-desc').innerText = `SECTOR LOG: Owned by ${p.player}.`;
                 document.getElementById('planet-rule').innerText = p.rule;
-
-                // --- LIMITER UI UPDATE ---
                 const atkBtn = document.getElementById('attack-btn');
                 const limMsg = document.getElementById('limiter-msg');
-                if (activeInvaders.includes(currentCommander)) {
-                    atkBtn.classList.add('disabled-btn'); atkBtn.innerText = "VOX SATURATED"; limMsg.style.display = 'block';
-                } else {
-                    atkBtn.classList.remove('disabled-btn'); atkBtn.innerText = "DECLARE INVASION"; limMsg.style.display = 'none';
-                    atkBtn.style.display = (p.player === currentCommander) ? 'none' : 'block';
-                }
-                const label = document.getElementById('faction-label'); label.innerText = `STATUS: ${p.faction.toUpperCase()}`;
+                if (activeInvaders.includes(currentCommander)) { atkBtn.classList.add('disabled-btn'); atkBtn.innerText = "VOX SATURATED"; limMsg.style.display = 'block'; } 
+                else { atkBtn.classList.remove('disabled-btn'); atkBtn.innerText = "DECLARE INVASION"; limMsg.style.display = 'none'; atkBtn.style.display = (p.player === currentCommander) ? 'none' : 'block'; }
+                document.getElementById('faction-label').innerText = `STATUS: ${p.faction.toUpperCase()}`;
             }
         });
 
-        function animate() { requestAnimationFrame(animate); if (!isGameActive) { planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); neutralReticles.forEach(r => { r.rotation.y += 0.01; r.material.opacity = 0.3 + Math.random() * 0.4; }); controls.update(); renderer.render(scene, camera); } }
+        function resetSectorView() { isZoomed = false; targetPos.set(0, 500, 1000); targetLookAt.set(0, 0, 0); document.getElementById('info-box').style.display = 'none'; document.getElementById('reset-view').style.display = 'none'; }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!isGameActive) { 
+                planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
+                atmospheres.forEach(a => { a.rotation.y -= 0.005; }); // COUNTER ROTATION
+                neutralReticles.forEach(r => { r.rotation.y += 0.01; r.material.opacity = 0.3 + Math.random() * 0.4; });
+                camera.position.lerp(targetPos, 0.05);
+                controls.target.lerp(targetLookAt, 0.05);
+                controls.update(); renderer.render(scene, camera); 
+            }
+        }
         animate(); updateLeaderboard();
 
-        // --- VOID WAR ---
+        // --- VOID WAR (REMAINING CODE UNCHANGED) ---
         const canvas = document.getElementById('game-canvas'); const ctx = canvas.getContext('2d'); const keys = {};
         function toggleMiniGame() { isGameActive = !isGameActive; canvas.style.display = isGameActive ? 'block' : 'none'; document.getElementById('game-overlay').style.display = isGameActive ? 'block' : 'none'; document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War'; if (isGameActive) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; game.init(); requestAnimationFrame(gameLoop); } }
         const game = {
