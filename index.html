@@ -118,7 +118,10 @@
         let adminKeySequence = "";
         let tapCount = 0;
         let isGameActive = false;
+        
+        // --- NAVIGATION STATE ---
         let isZoomed = false;
+        let isTransitioning = false; // PREVENTS RUBBER-BANDING
         let targetPos = new THREE.Vector3(0, 500, 1000);
         let targetLookAt = new THREE.Vector3(0, 0, 0);
 
@@ -223,7 +226,7 @@
             pMesh.add(new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.05, 12, 12), new THREE.MeshBasicMaterial({ color: planetColor, wireframe: true, transparent: true, opacity: 0.15 })));
             
             const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.1, 32, 32), new THREE.MeshPhongMaterial({ color: planetColor, transparent: true, opacity: 0.15, wireframe: true }));
-            pMesh.add(cloud); atmospheres.push(cloud); // Track for counter-rotation
+            pMesh.add(cloud); atmospheres.push(cloud); 
 
             if (data.player === "None") {
                 const ret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.OctahedronGeometry(data.size * 1.8, 0)), new THREE.LineBasicMaterial({ color: 0xFF0000, transparent: true, opacity: 0.5 }));
@@ -238,8 +241,6 @@
             if (document.getElementById('splash-screen').style.display !== 'none' || document.getElementById('player-select').style.display !== 'none' || isGameActive) return;
             const mouse = new THREE.Vector2((u.clientX / window.innerWidth) * 2 - 1, -(u.clientY / window.innerHeight) * 2 + 1);
             const raycaster = new THREE.Raycaster(); raycaster.setFromCamera(mouse, camera);
-            
-            // PRECISION HITBOX: Only intersect meshes, not ghost hitboxes
             const intersects = raycaster.intersectObjects(planetMeshes, false);
             
             if (intersects.length > 0) {
@@ -249,7 +250,10 @@
                 const worldPos = new THREE.Vector3(); obj.getWorldPosition(worldPos);
                 targetLookAt.copy(worldPos);
                 targetPos.set(worldPos.x + 30, worldPos.y + 20, worldPos.z + 40);
+                
                 isZoomed = true;
+                isTransitioning = true; // TRIGGER FLY-BY
+
                 document.getElementById('info-box').style.display = 'block';
                 document.getElementById('reset-view').style.display = 'block';
                 document.getElementById('planet-name').innerHTML = `${p.icon} ${p.name}`;
@@ -262,16 +266,33 @@
             }
         });
 
-        function resetSectorView() { isZoomed = false; targetPos.set(0, 500, 1000); targetLookAt.set(0, 0, 0); document.getElementById('info-box').style.display = 'none'; document.getElementById('reset-view').style.display = 'none'; }
+        function resetSectorView() { 
+            isZoomed = false; 
+            isTransitioning = true; // TRIGGER FLY-BACK
+            targetPos.set(0, 500, 1000); 
+            targetLookAt.set(0, 0, 0); 
+            document.getElementById('info-box').style.display = 'none'; 
+            document.getElementById('reset-view').style.display = 'none'; 
+        }
 
         function animate() {
             requestAnimationFrame(animate);
             if (!isGameActive) { 
                 planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
-                atmospheres.forEach(a => { a.rotation.y -= 0.005; }); // COUNTER ROTATION
+                atmospheres.forEach(a => { a.rotation.y -= 0.005; }); 
                 neutralReticles.forEach(r => { r.rotation.y += 0.01; r.material.opacity = 0.3 + Math.random() * 0.4; });
-                camera.position.lerp(targetPos, 0.05);
-                controls.target.lerp(targetLookAt, 0.05);
+                
+                // ONLY LERP IF TRANSITIONING
+                if (isTransitioning) {
+                    camera.position.lerp(targetPos, 0.05);
+                    controls.target.lerp(targetLookAt, 0.05);
+                    
+                    // IF ARRIVED, RELEASE CONTROLS
+                    if (camera.position.distanceTo(targetPos) < 1) {
+                        isTransitioning = false;
+                    }
+                }
+
                 controls.update(); renderer.render(scene, camera); 
             }
         }
