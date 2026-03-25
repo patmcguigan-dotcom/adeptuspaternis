@@ -6,27 +6,42 @@
     <title>SEC-MAP // OMNISSIAH-G6 // 41M</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+        
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         @keyframes globalFlicker { 0% { opacity: 0.99; } 5% { opacity: 0.95; } 10% { opacity: 0.98; } 100% { opacity: 1; } }
         @keyframes scanlineMove { 0% { bottom: 100%; } 100% { bottom: 0%; } }
 
-        body { margin: 0; background: radial-gradient(circle at center, #01050a 0%, #000000 100%); color: #00ff41; font-family: 'Special Elite', monospace; overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite; }
+        body { 
+            margin: 0; background: radial-gradient(circle at center, #01050a 0%, #000000 100%);
+            color: #00ff41; font-family: 'Special Elite', monospace; 
+            overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite;
+        }
+        
         .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; background: radial-gradient(circle, #051505 0%, #010103 100%); transition: opacity 0.5s; }
         .terminal-border { border: 2px solid #00ff41; padding: 30px; background: rgba(0, 10, 0, 0.9); text-align: center; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); }
+        
         button { background: transparent; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; position: relative; z-index: 8000; }
         button:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
         .player-btn { padding: 12px; margin: 5px; width: 280px; display: block; }
+
         #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; pointer-events: none; }
         #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 45s linear infinite; font-size: 14px; letter-spacing: 2px; }
+
         #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; transition: 0.4s; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
+        
         .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; transition: 0.4s; }
         .top-btns button { padding: 8px 15px; font-size: 11px; width: 110px; }
+
         .ui-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(-10px); }
+
         #info-box { position: absolute; right: 20px; top: 45px; width: 300px; background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; display: none; z-index: 8500; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
+        @media (max-width: 600px) { #info-box { width: 90%; left: 5%; right: auto; top: 40px; } }
+
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.98); z-index: 11000; display: none; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; }
         .modal-active { display: flex !important; }
         .slate-box { width: 90%; max-width: 800px; background: #050505; border: 2px solid #00ff41; padding: 30px; color: #00ff41; }
+        
         #game-canvas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9000; border: 20px double #1a331a; box-sizing: border-box; touch-action: none; }
         #instructions { position: absolute; bottom: 0; left: 0; padding: 40px; font-size: 9px; color: #003311; z-index: 10000; cursor: pointer; user-select: none; }
         #reset-view { position: absolute; bottom: 40px; right: 20px; padding: 15px 25px; display: none; z-index: 7500; color: #ff4444; border-color: #ff4444; }
@@ -36,7 +51,7 @@
 
     <div id="splash-screen" class="overlay-screen">
         <div class="terminal-border">
-            <button style="padding: 25px 50px;" onclick="showPlayerSelect()">
+            <button id="enter-btn" style="padding: 25px 50px;" onclick="showPlayerSelect()">
                 <span style="font-size: 2em; font-weight: bold; letter-spacing: 4px; display: block;">Adeptus Paternis</span>
                 <span style="font-size: 1.1em; font-style: italic; opacity: 0.8; display: block; margin-top: 5px;">Order of the Fathers</span>
             </button>
@@ -108,7 +123,8 @@
     <script>
         const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbw-XsWG5xIYioQJhxQ4fh2PL7Abph64FxLoG6r6g1Iyz4F8jotcBoSpOIepHOmccGn7/exec"; 
 
-        const ARMY_MAP = { "Aliks": "Adeptus Astartes", "Kieran": "T'au Empire", "Josh": "Tyranids", "Neil": "Aeldari", "Pat": "Necrons" };
+        // --- Lore Army Mapping ---
+        const RECON_MAP = { "Aliks": "Adeptus Astartes", "Kieran": "T'au Empire", "Josh": "Tyranid", "Neil": "Aeldari", "Pat": "Necron Dynasty" };
 
         let currentCommander = "", selectedPlanet = "", activeInvaders = [], adminKeySequence = "", tapCount = 0;
         let isGameActive = false, isZoomed = false, isTransitioning = false;
@@ -117,33 +133,45 @@
 
         function showPlayerSelect() { document.getElementById('splash-screen').style.display = 'none'; const pSelect = document.getElementById('player-select'); pSelect.style.visibility = 'visible'; pSelect.style.opacity = '1'; }
         function setCommander(name) { currentCommander = name; document.getElementById('player-select').style.display = 'none'; updateLeaderboard(); syncWarLog(); }
-        function toggleModal(id) { const el = document.getElementById(id); el.classList.toggle('modal-active'); if (id === 'admin-vault' && el.classList.contains('modal-active')) updateAdminPanel(); }
-        function handleGlobalKey(e) { adminKeySequence += e.key; if (adminKeySequence.length > 10) adminKeySequence = adminKeySequence.substring(1); if (adminKeySequence.includes("1169")) { toggleModal('admin-vault'); adminKeySequence = ""; return; } if (isGameActive) { if (e.code === "Space") game.fire(); keys[e.code] = true; } }
-        function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; if (navigator.vibrate) navigator.vibrate(50); } setTimeout(() => tapCount = 0, 3000); }
-        function toggleMainUI(show) { const group = [document.getElementById('leaderboard'), document.querySelector('.top-btns')]; group.forEach(el => { if (show) el.classList.remove('ui-hidden'); else el.classList.add('ui-hidden'); }); }
+        
+        function toggleModal(id) { 
+            const el = document.getElementById(id);
+            el.classList.toggle('modal-active');
+            if (id === 'admin-vault' && el.classList.contains('modal-active')) updateAdminPanel();
+        }
 
-        // --- NEW: SYNC LOGS & DRAW FLEETS ---
+        function handleGlobalKey(e) {
+            adminKeySequence += e.key;
+            if (adminKeySequence.length > 10) adminKeySequence = adminKeySequence.substring(1);
+            if (adminKeySequence.includes("1169")) { toggleModal('admin-vault'); adminKeySequence = ""; return; }
+            if (isGameActive) { if (e.code === "Space") game.fire(); keys[e.code] = true; }
+        }
+
+        function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; if (navigator.vibrate) navigator.vibrate(50); } setTimeout(() => tapCount = 0, 3000); }
+
+        function toggleMainUI(show) {
+            const group = [document.getElementById('leaderboard'), document.querySelector('.top-btns')];
+            group.forEach(el => { if (show) el.classList.remove('ui-hidden'); else el.classList.add('ui-hidden'); });
+        }
+
+        // --- REFINED SYNC & FLEET DEPLOYMENT ---
         async function syncWarLog() {
             try {
                 const response = await fetch(VOX_LINK_URL);
                 const data = await response.json();
                 const logs = data.slice(1);
                 
-                // 1. Identify active invaders (Filter out system actions)
                 activeInvaders = logs.filter(r => r[1] !== "SYSTEM").map(row => row[1]); 
 
-                // 2. Ticker Update (ARMY NAMES ONLY)
                 let reportString = "SYSTEM STATUS: NOMINAL // COGITATOR LINK STABLE // ";
                 const news = logs.filter(r => r[1] !== "SYSTEM").slice(-5).reverse().map(row => {
-                    const army = ARMY_MAP[row[1]] || row[1];
-                    return `${army.toUpperCase()} SHIPS DETECTED NEAR ${row[2].toUpperCase()}`;
+                    const army = RECON_MAP[row[1]] || row[1];
+                    return `${army.toUpperCase()} VESSELS DETECTED NEAR ${row[2].toUpperCase()}`;
                 });
                 document.getElementById('war-log-text').innerText = reportString + (news.length ? news.join(" // ") + " // " : "NO RECENT ACTIVITY // ");
 
-                // 3. Check for Kickoff
                 const isKickoffActive = logs.some(r => r[2] === "KICKOFF");
                 renderFleets(isKickoffActive ? logs.filter(r => r[1] !== "SYSTEM") : []);
-
             } catch (e) {}
         }
         syncWarLog(); setInterval(syncWarLog, 60000);
@@ -158,50 +186,41 @@
                 const targetName = inv[2];
                 const targetData = PLANET_DATA.find(p => p.name === targetName);
                 const playerPlanets = PLANET_DATA.filter(p => p.player === player);
-
                 if (!targetData || playerPlanets.length === 0) return;
 
-                // Find closest owned planet
-                let closestPlanet = null;
+                let origin = playerPlanets[0];
                 let minDist = Infinity;
                 playerPlanets.forEach(p => {
                     const d = Math.abs(p.dist - targetData.dist);
-                    if (d < minDist) { minDist = d; closestPlanet = p; }
+                    if (d < minDist) { minDist = d; origin = p; }
                 });
 
-                // Get World Positions
-                const originPos = new THREE.Vector3(closestPlanet.dist, 0, 0); 
-                const destPos = new THREE.Vector3(targetData.dist, 0, 0);
-                
-                // Add Orbital Offset
                 const pMesh = planetMeshes.find(m => m.userData.name === targetName);
-                const oMesh = planetMeshes.find(m => m.userData.name === closestPlanet.name);
+                const oMesh = planetMeshes.find(m => m.userData.name === origin.name);
                 if(!pMesh || !oMesh) return;
                 
                 const pWorld = new THREE.Vector3(); pMesh.getWorldPosition(pWorld);
                 const oWorld = new THREE.Vector3(); oMesh.getWorldPosition(oWorld);
 
-                // Draw Dotted Curve
                 const mid = new THREE.Vector3().addVectors(oWorld, pWorld).multiplyScalar(0.5);
-                mid.y += 50; // Curve height
+                mid.y += 40;
                 const curve = new THREE.QuadraticBezierCurve3(oWorld, mid, pWorld);
                 const points = curve.getPoints(50);
-                const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-                const lineMat = new THREE.LineDashedMaterial({ color: closestPlanet.color, dashSize: 2, gapSize: 2 });
-                const line = new THREE.Line(lineGeo, lineMat);
+                const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: origin.color, dashSize: 2, gapSize: 2 }));
                 line.computeLineDistances();
                 fleetLayer.add(line);
 
-                // Draw Ship at Halfway
-                const shipGeo = new THREE.ConeGeometry(3, 8, 4);
-                const shipMat = new THREE.MeshBasicMaterial({ color: closestPlanet.color });
-                const ship = new THREE.Mesh(shipGeo, shipMat);
-                const shipPos = curve.getPoint(0.5);
-                ship.position.copy(shipPos);
+                const ship = new THREE.Mesh(new THREE.ConeGeometry(3, 8, 4), new THREE.MeshBasicMaterial({ color: origin.color }));
+                ship.position.copy(curve.getPoint(0.5));
                 ship.lookAt(pWorld);
                 ship.rotateX(Math.PI/2);
                 fleetLayer.add(ship);
             });
+        }
+
+        async function kickoffInvasions() {
+            if(!confirm("EXECUTE INVASION PROTOCOLS?")) return;
+            try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: 'kickoff' }) }); alert("PROTOCOLS LIVE."); toggleModal('admin-vault'); syncWarLog(); } catch(e) {}
         }
 
         async function declareInvasion() {
@@ -211,16 +230,12 @@
             catch (e) { alert("VOX JAMMED."); } finally { btn.innerText = "DECLARE INVASION"; btn.disabled = false; }
         }
 
-        async function kickoffInvasions() {
-            if(!confirm("EXECUTE SECTOR-WIDE INVASION PROTOCOLS? This will make all current fleet movements visible to the sector.")) return;
-            try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: 'kickoff' }) }); alert("INVASION PROTOCOLS LIVE."); toggleModal('admin-vault'); syncWarLog(); } catch(e) {}
-        }
-
         async function purgeVoxRecords() { if(!confirm("PURGE?")) return; try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: 'purge' }) }); alert("WARP PURGED."); updateAdminPanel(); syncWarLog(); } catch(e) {} }
+        
         async function updateAdminPanel() {
             const container = document.getElementById('invasion-queue');
             try { const response = await fetch(VOX_LINK_URL); const data = await response.json(); const logs = data.slice(1).reverse();
-                container.innerHTML = logs.map(r => r[1] === "SYSTEM" ? `<div style="color:#00ff41; padding:5px; font-size:0.7em;">[ EXECUTION LOGGED: ${r[0]} ]</div>` : `<div style="border-bottom: 1px solid #440000; padding: 10px;"><strong>${r[1]}</strong> -> <strong>${r[2]}</strong></div>`).join('') || "No signals.";
+                container.innerHTML = logs.map(r => r[2] === "KICKOFF" ? `<div style="color:#00ff41; padding:5px; font-size:0.7em;">[ EXECUTION LOGGED ]</div>` : `<div style="border-bottom: 1px solid #440000; padding: 10px;"><strong>${r[1]}</strong> -> <strong>${r[2]}</strong></div>`).join('') || "No signals.";
             } catch (e) {}
         }
 
@@ -240,6 +255,26 @@
             { name: "Nocturne", size: 6.6, dist: 370, color: 0x2f4f4f, player: "None", faction: "Neutral", icon: "💀", rule: "Promethium: Re-roll Melta Wound 1s." },
             { name: "Necromunda", size: 5.4, dist: 410, color: 0xcd853f, player: "None", faction: "Neutral", icon: "🏛️", rule: "Grit: Infantry 6+ FNP." }
         ];
+
+        function updateLeaderboard() {
+            const plList = ["Aliks", "Kieran", "Josh", "Neil", "Pat"];
+            let scores = plList.map(name => {
+                let planetCount = PLANET_DATA.filter(p => p.player === name).length;
+                let combatPoints = BATTLE_HISTORY.filter(b => b.winner === name).reduce((acc, curr) => acc + parseInt(curr.score.split('-')[0]), 0);
+                return { name, power: (planetCount * 10) + Math.floor(combatPoints / 10) };
+            }).sort((a,b) => b.power - a.power);
+            document.getElementById('rankings-list').innerHTML = scores.map(s => `<div class="stat-row"><span>${s.name.toUpperCase()}</span> <span>${s.power} PL</span></div>`).join('');
+        }
+
+        function generateNoiseTexture(colorBase) {
+            const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d'); const imgData = ctx.createImageData(256, 256);
+            for (let i = 0; i < imgData.data.length; i += 4) {
+                const noise = Math.random() * 50; const c = new THREE.Color(colorBase);
+                imgData.data[i] = (c.r * 255) - noise; imgData.data[i+1] = (c.g * 255) - noise; imgData.data[i+2] = (c.b * 255) - noise; imgData.data[i+3] = 255;
+            }
+            ctx.putImageData(imgData, 0, 0); return new THREE.CanvasTexture(canvas);
+        }
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
@@ -308,7 +343,51 @@
         }
         animate();
 
-        // Mini-game and Leaderboard logic remain unchanged from previous versions.
+        // --- VOID WAR ---
+        const canvas = document.getElementById('game-canvas'); const ctx = canvas.getContext('2d'); const keys = {};
+        function toggleMiniGame() { isGameActive = !isGameActive; canvas.style.display = isGameActive ? 'block' : 'none'; document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War'; if (isGameActive) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; game.init(); requestAnimationFrame(gameLoop); } }
+        const game = {
+            ship: { x: 0, y: 0, r: 25, angle: 0, velX: 0, velY: 0 }, asteroids: [], bullets: [], particles: [], score: 0,
+            init() { this.ship = { x: canvas.width / 2, y: canvas.height / 2, r: 25, angle: -Math.PI / 2, velX: 0, velY: 0 }; this.asteroids = []; this.bullets = []; this.particles = []; this.score = 0; for (let i = 0; i < 6; i++) this.createAsteroid(); },
+            createAsteroid() { let x, y; do { x = Math.random() * canvas.width; y = Math.random() * canvas.height; } while (Math.hypot(x - this.ship.x, y - this.ship.y) < 150); this.asteroids.push({ x, y, r: 30 + Math.random() * 30, vX: (Math.random() - 0.5) * 1.5, vY: (Math.random() - 0.5) * 1.5, offset: Math.random() * 10 }); },
+            createExplosion(x, y, color) { for(let i=0; i<15; i++) { this.particles.push({ x, y, vX: (Math.random()-0.5)*4, vY: (Math.random()-0.5)*4, life: 30, color: i % 2 === 0 ? '#ff4500' : '#ffffff' }); } },
+            fire() { this.bullets.push({ x: this.ship.x + Math.cos(this.ship.angle) * this.ship.r, y: this.ship.y + Math.sin(this.ship.angle) * this.ship.r, angle: this.ship.angle, vX: Math.cos(this.ship.angle) * 12, vY: Math.sin(this.ship.angle) * 12, life: 50 }); },
+            update() {
+                if (keys['ArrowLeft'] || keys['KeyA']) this.ship.angle -= 0.08; if (keys['ArrowRight'] || keys['KeyD']) this.ship.angle += 0.08;
+                if (keys['ArrowUp'] || keys['KeyW']) { this.ship.velX += Math.cos(this.ship.angle) * 0.25; this.ship.velY += Math.sin(this.ship.angle) * 0.25; } else { this.ship.velX *= 0.98; this.ship.velY *= 0.98; }
+                this.ship.x += this.ship.velX; this.ship.y += this.ship.velY;
+                if (this.ship.x < 0) this.ship.x = canvas.width; else if (this.ship.x > canvas.width) this.ship.x = 0;
+                if (this.ship.y < 0) this.ship.y = canvas.height; else if (this.ship.y > canvas.height) this.ship.y = 0;
+                this.bullets.forEach((b, i) => { b.x += b.vX; b.y += b.vY; b.life--; if (b.life < 0) this.bullets.splice(i, 1); });
+                this.particles.forEach((p, i) => { p.x += p.vX; p.y += p.vY; p.life--; if (p.life < 0) this.particles.splice(i, 1); });
+                this.asteroids.forEach((a, i) => {
+                    a.x += a.vX; a.y += a.vY; if (a.x < 0) a.x = canvas.width; else if (a.x > canvas.width) a.x = 0; if (a.y < 0) a.y = canvas.height; else if (a.y > canvas.height) a.y = 0;
+                    if (Math.hypot(a.x - this.ship.x, a.y - this.ship.y) < a.r + this.ship.r) { this.createExplosion(this.ship.x, this.ship.y, '#fff'); setTimeout(() => this.init(), 100); }
+                    this.bullets.forEach((b, bi) => {
+                        if (Math.hypot(a.x - b.x, a.y - b.y) < a.r) {
+                            this.score += 100; this.createExplosion(a.x, a.y, '#ff4500');
+                            if (a.r > 20) { this.asteroids.push({ x: a.x, y: a.y, r: a.r / 2, vX: (Math.random()-0.5)*3, vY: (Math.random()-0.5)*3, offset: Math.random()*10 }); this.asteroids.push({ x: a.x, y: a.y, r: a.r / 2, vX: (Math.random()-0.5)*3, vY: (Math.random()-0.5)*3, offset: Math.random()*10 }); }
+                            this.asteroids.splice(i, 1); this.bullets.splice(bi, 1); if (this.asteroids.length < 4) this.createAsteroid();
+                        }
+                    });
+                });
+            },
+            draw() {
+                const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
+                grad.addColorStop(0, '#2a0a0a'); grad.addColorStop(0.5, '#0a1a0a'); grad.addColorStop(1, '#000000');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.save(); ctx.translate(this.ship.x, this.ship.y); ctx.rotate(this.ship.angle); ctx.strokeStyle = '#00ff41'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(30, 0); ctx.lineTo(-10, -10); ctx.lineTo(-20, -15); ctx.lineTo(-25, 0); ctx.lineTo(-20, 15); ctx.lineTo(-10, 10); ctx.closePath(); ctx.stroke(); ctx.restore();
+                this.asteroids.forEach(a => { ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 1.5; ctx.beginPath(); for(let i=0; i<8; i++) { let ang = (i / 8) * Math.PI * 2; let rad = a.r + (Math.sin(ang * 4 + a.offset) * 5); ctx.lineTo(a.x + Math.cos(ang) * rad, a.y + Math.sin(ang) * rad); } ctx.closePath(); ctx.stroke(); });
+                this.bullets.forEach(b => { ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.angle); ctx.fillStyle = '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff'; ctx.fillRect(0, -1, 20, 2); ctx.restore(); });
+                this.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 30; ctx.fillRect(p.x, p.y, 2, 2); ctx.globalAlpha = 1; });
+                ctx.fillStyle = '#00ff41'; ctx.font = '24px Special Elite'; ctx.textAlign = 'right'; ctx.fillText(`XENOS KILLS: ${this.score}`, canvas.width - 50, 60);
+            }
+        };
+        canvas.addEventListener('pointerdown', (e) => { if (!isGameActive) return; if (e.clientX < 120 && e.clientY < 80) { toggleMiniGame(); return; } if (e.clientX > window.innerWidth / 2) { game.fire(); } else { keys['TouchMove'] = true; handleTouchMove(e.clientX, e.clientY); } });
+        canvas.addEventListener('pointermove', (e) => { if (isGameActive && keys['TouchMove']) handleTouchMove(e.clientX, e.clientY); });
+        canvas.addEventListener('pointerup', () => { keys['TouchMove'] = false; });
+        function handleTouchMove(tX, tY) { const dx = tX - game.ship.x; const dy = tY - game.ship.y; game.ship.angle = Math.atan2(dy, dx); game.ship.velX += Math.cos(game.ship.angle) * 0.3; game.ship.velY += Math.sin(game.ship.angle) * 0.3; }
+        function gameLoop() { if (!isGameActive) return; game.update(); game.draw(); requestAnimationFrame(gameLoop); }
     </script>
 </body>
 </html>
