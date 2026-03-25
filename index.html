@@ -27,35 +27,39 @@
         #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; }
         #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 45s linear infinite; font-size: 14px; letter-spacing: 2px; }
 
-        /* --- UI COMPONENTS --- */
         #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; transition: opacity 0.4s, transform 0.4s; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
-
         .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; transition: opacity 0.4s, transform 0.4s; }
         .top-btns button { padding: 8px 15px; font-size: 11px; width: 110px; }
 
-        /* Culling State */
         .ui-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(-10px); }
 
-        #info-box { 
-            position: absolute; right: 20px; top: 45px; width: 300px; 
-            background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; 
-            display: none; z-index: 8000; box-shadow: 0 0 20px rgba(0,255,65,0.1);
-        }
-        
-        @media (max-width: 600px) {
-            #info-box { width: 90%; left: 5%; right: auto; top: 40px; padding: 15px; }
-        }
+        #info-box { position: absolute; right: 20px; top: 45px; width: 300px; background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; display: none; z-index: 8000; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
+        @media (max-width: 600px) { #info-box { width: 90%; left: 5%; right: auto; top: 40px; padding: 15px; } }
 
         .invasion-btn { background: #ff0000; color: #fff; border: none; padding: 12px; width: 100%; margin-top: 15px; font-weight: bold; }
         .disabled-btn { background: #333 !important; color: #777 !important; border: 1px solid #555 !important; cursor: not-allowed !important; }
 
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9500; display: none; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; }
         .slate-box { width: 90%; max-width: 800px; background: #050505; border: 2px solid #00ff41; padding: 30px; color: #00ff41; }
+        
         #game-canvas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9600; border: 20px double #1a331a; box-sizing: border-box; touch-action: none; }
         #game-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9601; pointer-events: none; }
         
-        #instructions { position: absolute; bottom: 0; left: 0; padding: 30px; font-size: 9px; color: #003311; z-index: 8000; cursor: pointer; }
+        /* --- SUPREME LAYER FOR VAULT TRIGGER --- */
+        #instructions { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            padding: 40px; /* Enhanced thumb-hitbox */
+            font-size: 9px; 
+            color: #003311; 
+            z-index: 10000; /* Higher than everything */
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
         #reset-view { position: absolute; bottom: 40px; right: 20px; padding: 15px 25px; display: none; z-index: 7500; color: #ff4444; border-color: #ff4444; }
     </style>
 </head>
@@ -105,7 +109,8 @@
     </div>
 
     <button id="reset-view" onclick="resetSectorView()">[ EXIT SURVEY ]</button>
-    <div id="instructions" onclick="handleAdminTap()">COGITATOR OMNISSIAH-G6 // [ACCESS VAULT]</div>
+    
+    <div id="instructions" onpointerdown="handleAdminTap()">COGITATOR OMNISSIAH-G6 // [ACCESS VAULT]</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
@@ -127,17 +132,37 @@
         function showPlayerSelect() { document.getElementById('splash-screen').style.display = 'none'; const pSelect = document.getElementById('player-select'); pSelect.style.visibility = 'visible'; pSelect.style.opacity = '1'; }
         function setCommander(name) { currentCommander = name; const pSelect = document.getElementById('player-select'); pSelect.style.opacity = '0'; setTimeout(() => { pSelect.style.display = 'none'; pSelect.style.pointerEvents = 'none'; }, 500); updateLeaderboard(); syncWarLog(); }
         function toggleModal(id) { const el = document.getElementById(id); if (el.style.display === 'flex') { el.style.display = 'none'; } else { el.style.display = 'flex'; if (id === 'admin-vault') updateAdminPanel(); } }
-        function handleGlobalKey(e) { if (isGameActive && ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault(); adminKeySequence += e.key; if (adminKeySequence.includes("1169")) { toggleModal('admin-vault'); adminKeySequence = ""; } if (isGameActive) { if (e.code === "Space") game.fire(); keys[e.code] = true; } }
-        function handleGlobalKeyUp(e) { if (isGameActive) keys[e.code] = false; }
-        function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; } }
 
-        // --- UI CULLING LOGIC ---
+        // --- UPDATED HANDLER: OVERRIDE PROTECTION ---
+        function handleGlobalKey(e) {
+            // 1. VAULT OVERRIDE CHECK (Priority 1)
+            adminKeySequence += e.key;
+            if (adminKeySequence.length > 10) adminKeySequence = adminKeySequence.substring(1);
+            if (adminKeySequence.includes("1169")) { 
+                toggleModal('admin-vault'); 
+                adminKeySequence = ""; 
+                return;
+            }
+
+            // 2. GAME CONTROLS (Priority 2)
+            if (isGameActive && ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
+            if (isGameActive) { if (e.code === "Space") game.fire(); keys[e.code] = true; }
+        }
+        function handleGlobalKeyUp(e) { if (isGameActive) keys[e.code] = false; }
+        
+        function handleAdminTap() { 
+            tapCount++; 
+            if(tapCount >= 5) { 
+                toggleModal('admin-vault'); 
+                tapCount = 0; 
+                if (navigator.vibrate) navigator.vibrate(50); // Feedback for owner
+            }
+            setTimeout(() => { if(tapCount > 0) tapCount = 0; }, 3000); // Reset if too slow
+        }
+
         function toggleMainUI(show) {
             const elements = [document.getElementById('leaderboard'), document.querySelector('.top-btns')];
-            elements.forEach(el => {
-                if (show) el.classList.remove('ui-hidden');
-                else el.classList.add('ui-hidden');
-            });
+            elements.forEach(el => { if (show) el.classList.remove('ui-hidden'); else el.classList.add('ui-hidden'); });
         }
 
         async function syncWarLog() {
@@ -242,10 +267,9 @@
             group.rotation.y = Math.random() * Math.PI * 2;
         });
 
-        // --- FIXED POINTER LISTENER ---
         window.addEventListener('pointerup', (u) => {
-            // IGNORE IF CLICKING AN ACTUAL BUTTON (Fixes Archives/Void War)
-            if (u.target.tagName === 'BUTTON' || u.target.closest('#leaderboard')) return;
+            // FIX: If clicking Archives, Void War, OR the hidden Vault label, do not trigger map zoom
+            if (u.target.tagName === 'BUTTON' || u.target.closest('#leaderboard') || u.target.id === 'instructions') return;
             
             if (document.getElementById('splash-screen').style.display !== 'none' || document.getElementById('player-select').style.display !== 'none' || isGameActive) return;
             const mouse = new THREE.Vector2((u.clientX / window.innerWidth) * 2 - 1, -(u.clientY / window.innerHeight) * 2 + 1);
@@ -259,11 +283,7 @@
                 const worldPos = new THREE.Vector3(); obj.getWorldPosition(worldPos);
                 targetLookAt.copy(worldPos);
                 targetPos.set(worldPos.x + 30, worldPos.y + 20, worldPos.z + 40);
-                
-                isZoomed = true;
-                isTransitioning = true;
-                toggleMainUI(false); // CULL HUD
-
+                isZoomed = true; isTransitioning = true; toggleMainUI(false); 
                 document.getElementById('info-box').style.display = 'block';
                 document.getElementById('reset-view').style.display = 'block';
                 document.getElementById('planet-name').innerHTML = `${p.icon} ${p.name}`;
@@ -276,15 +296,7 @@
             }
         });
 
-        function resetSectorView() { 
-            isZoomed = false; 
-            isTransitioning = true; 
-            targetPos.set(0, 500, 1000); 
-            targetLookAt.set(0, 0, 0); 
-            document.getElementById('info-box').style.display = 'none'; 
-            document.getElementById('reset-view').style.display = 'none'; 
-            toggleMainUI(true); // RESTORE HUD
-        }
+        function resetSectorView() { isZoomed = false; isTransitioning = true; targetPos.set(0, 500, 1000); targetLookAt.set(0, 0, 0); document.getElementById('info-box').style.display = 'none'; document.getElementById('reset-view').style.display = 'none'; toggleMainUI(true); }
 
         function animate() {
             requestAnimationFrame(animate);
@@ -298,7 +310,7 @@
         }
         animate(); updateLeaderboard();
 
-        // --- VOID WAR (UNCHANGED) ---
+        // --- VOID WAR ---
         const canvas = document.getElementById('game-canvas'); const ctx = canvas.getContext('2d'); const keys = {};
         function toggleMiniGame() { isGameActive = !isGameActive; canvas.style.display = isGameActive ? 'block' : 'none'; document.getElementById('game-overlay').style.display = isGameActive ? 'block' : 'none'; document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War'; if (isGameActive) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; game.init(); requestAnimationFrame(gameLoop); } }
         const game = {
