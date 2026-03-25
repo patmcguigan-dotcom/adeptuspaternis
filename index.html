@@ -17,53 +17,37 @@
             overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite;
         }
         
-        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; background: radial-gradient(circle, #051505 0%, #010103 100%); transition: opacity 0.5s, visibility 0.5s; }
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; background: radial-gradient(circle, #051505 0%, #010103 100%); transition: opacity 0.5s; }
         .terminal-border { border: 2px solid #00ff41; padding: 30px; background: rgba(0, 10, 0, 0.9); text-align: center; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); }
         
-        button { background: transparent; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; position: relative; z-index: 7600; }
+        button { background: transparent; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; position: relative; z-index: 8000; }
         button:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
         .player-btn { padding: 12px; margin: 5px; width: 280px; display: block; }
 
-        #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; }
+        #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; pointer-events: none; }
         #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 45s linear infinite; font-size: 14px; letter-spacing: 2px; }
 
-        #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; transition: opacity 0.4s, transform 0.4s; }
+        #leaderboard { position: absolute; top: 45px; left: 20px; width: 220px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; transition: 0.4s; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
-        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; transition: opacity 0.4s, transform 0.4s; }
+        
+        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; transition: 0.4s; }
         .top-btns button { padding: 8px 15px; font-size: 11px; width: 110px; }
 
         .ui-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(-10px); }
 
-        #info-box { position: absolute; right: 20px; top: 45px; width: 300px; background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; display: none; z-index: 8000; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
-        @media (max-width: 600px) { #info-box { width: 90%; left: 5%; right: auto; top: 40px; padding: 15px; } }
+        #info-box { position: absolute; right: 20px; top: 45px; width: 300px; background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; display: none; z-index: 8500; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
+        @media (max-width: 600px) { #info-box { width: 90%; left: 5%; right: auto; top: 40px; } }
 
-        .invasion-btn { background: #ff0000; color: #fff; border: none; padding: 12px; width: 100%; margin-top: 15px; font-weight: bold; }
-        .disabled-btn { background: #333 !important; color: #777 !important; border: 1px solid #555 !important; cursor: not-allowed !important; }
-
-        .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9500; display: none; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; }
+        .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.98); z-index: 11000; display: none; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; }
+        .modal-active { display: flex !important; }
         .slate-box { width: 90%; max-width: 800px; background: #050505; border: 2px solid #00ff41; padding: 30px; color: #00ff41; }
         
-        #game-canvas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9600; border: 20px double #1a331a; box-sizing: border-box; touch-action: none; }
-        #game-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9601; pointer-events: none; }
-        
-        /* --- SUPREME LAYER FOR VAULT TRIGGER --- */
-        #instructions { 
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            padding: 40px; /* Enhanced thumb-hitbox */
-            font-size: 9px; 
-            color: #003311; 
-            z-index: 10000; /* Higher than everything */
-            cursor: pointer;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
+        #game-canvas { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9000; border: 20px double #1a331a; box-sizing: border-box; touch-action: none; }
+        #instructions { position: absolute; bottom: 0; left: 0; padding: 40px; font-size: 9px; color: #003311; z-index: 10000; cursor: pointer; user-select: none; }
         #reset-view { position: absolute; bottom: 40px; right: 20px; padding: 15px 25px; display: none; z-index: 7500; color: #ff4444; border-color: #ff4444; }
     </style>
 </head>
-<body onkeydown="handleGlobalKey(event)" onkeyup="handleGlobalKeyUp(event)">
+<body onkeydown="handleGlobalKey(event)">
 
     <div id="splash-screen" class="overlay-screen">
         <div class="terminal-border">
@@ -89,27 +73,45 @@
 
     <div id="leaderboard"><h3>Sector Supremacy</h3><div id="rankings-list"></div></div>
     <div class="top-btns">
-        <button id="archive-btn" onclick="toggleModal('archive-overlay')">Archives</button>
-        <button id="minigame-btn" onclick="toggleMiniGame()">Void War</button>
+        <button onclick="toggleModal('archive-overlay')">Archives</button>
+        <button onclick="toggleMiniGame()">Void War</button>
     </div>
 
     <canvas id="game-canvas"></canvas>
-    <div id="game-overlay"></div>
+
+    <div id="archive-overlay" class="fullscreen-modal">
+        <div class="slate-box">
+            <h1 style="text-align: center;">Battle History: Sector 41-G6</h1>
+            <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
+                <thead><tr><th style="text-align:left;">Planet</th><th style="text-align:left;">Winner</th><th style="text-align:left;">Loser</th><th style="text-align:left;">Score</th></tr></thead>
+                <tbody id="battle-rows"><tr><td colspan="4" style="text-align:center; opacity: 0.5;">[ NO LOGS FOUND ]</td></tr></tbody>
+            </table>
+            <button onclick="toggleModal('archive-overlay')" style="width:100%; margin-top:20px; padding: 15px;">Return</button>
+        </div>
+    </div>
+
+    <div id="admin-vault" class="fullscreen-modal" style="background: rgba(10,0,0,0.98);">
+        <div class="slate-box" style="border-color: #ff0000; color: #ff0000;">
+            <h1 style="text-align: center;">STRATEGOS COMMAND VAULT</h1>
+            <div id="invasion-queue"><p style="text-align: center; opacity: 0.5;">Scanning Warp...</p></div>
+            <div style="display:flex; gap:10px; margin-top:30px;">
+                <button onclick="purgeVoxRecords()" style="flex:1; border-color: red; color: red; padding: 15px;">PURGE RECORDS</button>
+                <button onclick="toggleModal('admin-vault')" style="flex:1; border-color: #555; color: #555; padding: 15px;">Exit</button>
+            </div>
+        </div>
+    </div>
 
     <div id="info-box">
-        <div id="faction-label" style="font-size: 0.7em; border: 1px solid #00ff41; padding: 4px; display: inline-block; margin-bottom: 10px;">STATUS</div>
-        <h2 id="planet-name" style="margin: 0; font-size: 1.4em;">WORLD</h2>
-        <p id="planet-desc" style="font-size: 0.8em; opacity: 0.7;">Orbital Survey Active...</p>
+        <div id="faction-label" style="font-size: 0.7em; border: 1px solid #00ff41; padding: 4px; display: inline-block;">STATUS</div>
+        <h2 id="planet-name" style="margin: 5px 0;">WORLD</h2>
         <div style="background: rgba(0, 255, 65, 0.1); padding: 10px; border-left: 3px solid #00ff41; margin-top: 10px; font-size: 0.85em;">
-            <strong style="color: #00ff41;">TACTICAL DATA:</strong><br>
-            <span id="planet-rule">Awaiting...</span>
+            <strong style="color: #00ff41;">TACTICAL DATA:</strong><br><span id="planet-rule">Awaiting...</span>
         </div>
         <button id="attack-btn" class="invasion-btn" onclick="declareInvasion()">DECLARE INVASION</button>
-        <p id="limiter-msg" style="color: #ff4444; font-size: 0.7em; margin-top: 5px; display: none;">[ VOX LIMIT: ONE PER CYCLE ]</p>
+        <p id="limiter-msg" style="color: #ff4444; font-size: 0.7em; display: none;">[ VOX LIMIT REACHED ]</p>
     </div>
 
     <button id="reset-view" onclick="resetSectorView()">[ EXIT SURVEY ]</button>
-    
     <div id="instructions" onpointerdown="handleAdminTap()">COGITATOR OMNISSIAH-G6 // [ACCESS VAULT]</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -118,51 +120,31 @@
     <script>
         const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbw-XsWG5xIYioQJhxQ4fh2PL7Abph64FxLoG6r6g1Iyz4F8jotcBoSpOIepHOmccGn7/exec"; 
 
-        let currentCommander = "";
-        let selectedPlanet = "";
-        let activeInvaders = [];
-        let adminKeySequence = "";
-        let tapCount = 0;
-        let isGameActive = false;
-        let isZoomed = false;
-        let isTransitioning = false;
-        let targetPos = new THREE.Vector3(0, 500, 1000);
-        let targetLookAt = new THREE.Vector3(0, 0, 0);
+        let currentCommander = "", selectedPlanet = "", activeInvaders = [], adminKeySequence = "", tapCount = 0;
+        let isGameActive = false, isZoomed = false, isTransitioning = false;
+        let targetPos = new THREE.Vector3(0, 500, 1000), targetLookAt = new THREE.Vector3(0, 0, 0);
 
         function showPlayerSelect() { document.getElementById('splash-screen').style.display = 'none'; const pSelect = document.getElementById('player-select'); pSelect.style.visibility = 'visible'; pSelect.style.opacity = '1'; }
-        function setCommander(name) { currentCommander = name; const pSelect = document.getElementById('player-select'); pSelect.style.opacity = '0'; setTimeout(() => { pSelect.style.display = 'none'; pSelect.style.pointerEvents = 'none'; }, 500); updateLeaderboard(); syncWarLog(); }
-        function toggleModal(id) { const el = document.getElementById(id); if (el.style.display === 'flex') { el.style.display = 'none'; } else { el.style.display = 'flex'; if (id === 'admin-vault') updateAdminPanel(); } }
+        function setCommander(name) { currentCommander = name; document.getElementById('player-select').style.display = 'none'; updateLeaderboard(); syncWarLog(); }
+        
+        function toggleModal(id) { 
+            const el = document.getElementById(id);
+            el.classList.toggle('modal-active');
+            if (id === 'admin-vault' && el.classList.contains('modal-active')) updateAdminPanel();
+        }
 
-        // --- UPDATED HANDLER: OVERRIDE PROTECTION ---
         function handleGlobalKey(e) {
-            // 1. VAULT OVERRIDE CHECK (Priority 1)
             adminKeySequence += e.key;
             if (adminKeySequence.length > 10) adminKeySequence = adminKeySequence.substring(1);
-            if (adminKeySequence.includes("1169")) { 
-                toggleModal('admin-vault'); 
-                adminKeySequence = ""; 
-                return;
-            }
-
-            // 2. GAME CONTROLS (Priority 2)
-            if (isGameActive && ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
+            if (adminKeySequence.includes("1169")) { toggleModal('admin-vault'); adminKeySequence = ""; return; }
             if (isGameActive) { if (e.code === "Space") game.fire(); keys[e.code] = true; }
         }
-        function handleGlobalKeyUp(e) { if (isGameActive) keys[e.code] = false; }
-        
-        function handleAdminTap() { 
-            tapCount++; 
-            if(tapCount >= 5) { 
-                toggleModal('admin-vault'); 
-                tapCount = 0; 
-                if (navigator.vibrate) navigator.vibrate(50); // Feedback for owner
-            }
-            setTimeout(() => { if(tapCount > 0) tapCount = 0; }, 3000); // Reset if too slow
-        }
+
+        function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; if (navigator.vibrate) navigator.vibrate(50); } setTimeout(() => tapCount = 0, 3000); }
 
         function toggleMainUI(show) {
-            const elements = [document.getElementById('leaderboard'), document.querySelector('.top-btns')];
-            elements.forEach(el => { if (show) el.classList.remove('ui-hidden'); else el.classList.add('ui-hidden'); });
+            const group = [document.getElementById('leaderboard'), document.querySelector('.top-btns')];
+            group.forEach(el => { if (show) el.classList.remove('ui-hidden'); else el.classList.add('ui-hidden'); });
         }
 
         async function syncWarLog() {
@@ -173,45 +155,45 @@
                 activeInvaders = logs.map(row => row[1]); 
                 let reportString = "SYSTEM STATUS: NOMINAL // COGITATOR LINK STABLE // ";
                 if (logs.length > 0) {
-                    const newsItems = logs.slice(-5).reverse().map(row => `${(row[1]).toUpperCase()} SIGNATURES DETECTED NEAR ${row[2].toUpperCase()}`);
-                    reportString += newsItems.join(" // ") + " // ";
-                } else { reportString += "NO RECENT XENOS OR RENEGADE ACTIVITY RECORDED // "; }
+                    const news = logs.slice(-5).reverse().map(row => `${row[1].toUpperCase()} SIGNATURES DETECTED NEAR ${row[2].toUpperCase()}`);
+                    reportString += news.join(" // ") + " // ";
+                } else reportString += "NO RECENT ACTIVITY RECORDED // ";
                 document.getElementById('war-log-text').innerText = reportString;
-            } catch (e) { console.log("Uplink failed."); }
+            } catch (e) {}
         }
         syncWarLog(); setInterval(syncWarLog, 60000);
 
         async function declareInvasion() {
             if(activeInvaders.includes(currentCommander)) return; 
-            const btn = document.getElementById('attack-btn');
-            btn.innerText = "TRANSMITTING..."; btn.disabled = true;
+            const btn = document.getElementById('attack-btn'); btn.innerText = "TRANSMITTING..."; btn.disabled = true;
             try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ player: currentCommander, target: selectedPlanet }) }); alert("VOX SUCCESS."); document.getElementById('info-box').style.display = 'none'; syncWarLog(); resetSectorView(); } 
             catch (e) { alert("VOX JAMMED."); } finally { btn.innerText = "DECLARE INVASION"; btn.disabled = false; }
         }
 
-        async function purgeVoxRecords() { if(!confirm("CONFIRM PURGE?")) return; try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: 'purge' }) }); alert("WARP PURGED."); updateAdminPanel(); syncWarLog(); } catch(e) { alert("FAILED."); } }
+        async function purgeVoxRecords() { if(!confirm("CONFIRM PURGE?")) return; try { await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: 'purge' }) }); alert("WARP PURGED."); updateAdminPanel(); syncWarLog(); } catch(e) {} }
+        
         async function updateAdminPanel() {
             const container = document.getElementById('invasion-queue');
             try { const response = await fetch(VOX_LINK_URL); const data = await response.json(); const logs = data.slice(1).reverse();
-                container.innerHTML = logs.map(r => `<div style="border-bottom: 1px solid #440000; padding: 10px;"><strong style="color:white;">${r[1]}</strong> targeting <strong style="color:white;">${r[2]}</strong><br><small style="opacity:0.5;">${new Date(r[0]).toLocaleString()}</small></div>`).join('') || "No active signals.";
-            } catch (e) { container.innerHTML = "Link failed."; }
+                container.innerHTML = logs.map(r => `<div style="border-bottom: 1px solid #440000; padding: 10px;"><strong>${r[1]}</strong> -> <strong>${r[2]}</strong><br><small>${new Date(r[0]).toLocaleString()}</small></div>`).join('') || "No signals.";
+            } catch (e) {}
         }
 
         const PLANET_DATA = [
-            { name: "T'au", size: 3.6, dist: 28, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "🏛️", rule: "Markerlight Calibration: Re-roll one Hit roll of 1 per phase." },
-            { name: "Vior'la", size: 3.4, dist: 45, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "⚙️", rule: "Rapid Deployment: +1\" Move to one Infantry unit in Round 1." },
-            { name: "Macragge", size: 4.9, dist: 65, color: 0xffff00, player: "Aliks", faction: "Space Marines", icon: "🏛️", rule: "Ultramar Discipline: Re-roll one failed Battle-shock test per battle." },
-            { name: "Phall", size: 3.2, dist: 85, color: 0xffff00, player: "Aliks", faction: "Space Marines", icon: "⚙️", rule: "Dorn's Bulwark: Gain Benefit of Cover if stationary." },
-            { name: "Tyran Primus", size: 3.5, dist: 110, color: 0xff00ff, player: "Josh", faction: "Tyranids", icon: "💀", rule: "Lurking Horror: -1 to enemy Charge rolls against objectives." },
-            { name: "Octarius", size: 4.2, dist: 135, color: 0xff00ff, player: "Josh", faction: "Tyranids", icon: "💀", rule: "Spores in the Air: One unit gains Stealth in Round 1." },
-            { name: "Solemnace", size: 3.7, dist: 165, color: 0x00ff00, player: "Pat", faction: "Necrons", icon: "⚙️", rule: "Ancient Archives: One Battle Tactic Stratagem for 0CP per battle." },
-            { name: "Damnos", size: 3.4, dist: 190, color: 0x00ff00, player: "Pat", faction: "Necrons", icon: "❄️", rule: "Slow Awakening: Re-roll one Reanimation Protocols roll per battle." },
-            { name: "Biel-Tan Outpost", size: 5.3, dist: 220, color: 0x320064, player: "Neil", faction: "Aeldari", icon: "🌿", rule: "Way of the Warrior: +1 to Advance rolls for one unit per turn." },
-            { name: "Iyanden Outpost", size: 1.5, dist: 250, color: 0x320064, player: "Neil", faction: "Aeldari", icon: "❄️", rule: "Wraith-Sight: One unit automatically passes Battle-shock once per battle." },
-            { name: "Mars", size: 7.0, dist: 290, color: 0xff4500, player: "None", faction: "Neutral", icon: "⚙️", rule: "Forge-Code: One Vehicle regains 1 Wound per turn." },
-            { name: "Armageddon", size: 3.8, dist: 330, color: 0x8b4513, player: "None", faction: "Neutral", icon: "🏛️", rule: "Waste Scavengers: Re-roll attack count for one weapon per battle." },
-            { name: "Nocturne", size: 6.6, dist: 370, color: 0x2f4f4f, player: "None", faction: "Neutral", icon: "💀", rule: "Promethium Reserve: Re-roll one Wound roll of 1 for Melta/Torrent." },
-            { name: "Necromunda", size: 5.4, dist: 410, color: 0xcd853f, player: "None", faction: "Neutral", icon: "🏛️", rule: "Grit and Grime: One Infantry unit gains 6+ FNP for one phase." }
+            { name: "T'au", size: 3.6, dist: 28, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "🏛️", rule: "Markerlight Calibration: Re-roll Hit rolls of 1." },
+            { name: "Vior'la", size: 3.4, dist: 45, color: 0xffffff, player: "Kieran", faction: "T'au Empire", icon: "⚙️", rule: "Rapid Deployment: +1 Move in Round 1." },
+            { name: "Macragge", size: 4.9, dist: 65, color: 0xffff00, player: "Aliks", faction: "Space Marines", icon: "🏛️", rule: "Ultramar Discipline: Re-roll Battle-shock." },
+            { name: "Phall", size: 3.2, dist: 85, color: 0xffff00, player: "Aliks", faction: "Space Marines", icon: "⚙️", rule: "Dorn's Bulwark: Stationary Cover bonus." },
+            { name: "Tyran Primus", size: 3.5, dist: 110, color: 0xff00ff, player: "Josh", faction: "Tyranids", icon: "💀", rule: "Lurking Horror: -1 to enemy Charges." },
+            { name: "Octarius", size: 4.2, dist: 135, color: 0xff00ff, player: "Josh", faction: "Tyranids", icon: "💀", rule: "Spores: Stealth in Round 1." },
+            { name: "Solemnace", size: 3.7, dist: 165, color: 0x00ff00, player: "Pat", faction: "Necrons", icon: "⚙️", rule: "Ancient Archives: 0CP Battle Tactic." },
+            { name: "Damnos", size: 3.4, dist: 190, color: 0x00ff00, player: "Pat", faction: "Necrons", icon: "❄️", rule: "Slow Awakening: Re-roll Reanimation." },
+            { name: "Biel-Tan Outpost", size: 5.3, dist: 220, color: 0x320064, player: "Neil", faction: "Aeldari", icon: "🌿", rule: "Way of the Warrior: +1 to Advance." },
+            { name: "Iyanden Outpost", size: 1.5, dist: 250, color: 0x320064, player: "Neil", faction: "Aeldari", icon: "❄️", rule: "Wraith-Sight: Auto-pass Battle-shock once." },
+            { name: "Mars", size: 7.0, dist: 290, color: 0xff4500, player: "None", faction: "Neutral", icon: "⚙️", rule: "Forge-Code: Vehicle regains 1 Wound." },
+            { name: "Armageddon", size: 3.8, dist: 330, color: 0x8b4513, player: "None", faction: "Neutral", icon: "🏛️", rule: "Scavengers: Re-roll attack counts once." },
+            { name: "Nocturne", size: 6.6, dist: 370, color: 0x2f4f4f, player: "None", faction: "Neutral", icon: "💀", rule: "Promethium: Re-roll Melta Wound 1s." },
+            { name: "Necromunda", size: 5.4, dist: 410, color: 0xcd853f, player: "None", faction: "Neutral", icon: "🏛️", rule: "Grit: Infantry 6+ FNP." }
         ];
 
         const BATTLE_HISTORY = [];
@@ -246,7 +228,7 @@
         scene.add(new THREE.PointLight(0x00ff41, 5, 2000));
         scene.add(new THREE.Mesh(new THREE.SphereGeometry(18, 32, 32), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })));
         
-        const planetMeshes = []; const planetGroups = []; const neutralReticles = []; const atmospheres = [];
+        const planetMeshes = [], planetGroups = [], neutralReticles = [], atmospheres = [];
         PLANET_DATA.forEach((data) => {
             const group = new THREE.Group(); scene.add(group); planetGroups.push(group);
             group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * (1 / (data.size * 0.8)) * (0.8 + Math.random() * 0.4);
@@ -267,29 +249,22 @@
             group.rotation.y = Math.random() * Math.PI * 2;
         });
 
-        window.addEventListener('pointerup', (u) => {
-            // FIX: If clicking Archives, Void War, OR the hidden Vault label, do not trigger map zoom
-            if (u.target.tagName === 'BUTTON' || u.target.closest('#leaderboard') || u.target.id === 'instructions') return;
-            
+        // --- ISOLATED 3D LISTENER ---
+        renderer.domElement.addEventListener('pointerup', (u) => {
             if (document.getElementById('splash-screen').style.display !== 'none' || document.getElementById('player-select').style.display !== 'none' || isGameActive) return;
             const mouse = new THREE.Vector2((u.clientX / window.innerWidth) * 2 - 1, -(u.clientY / window.innerHeight) * 2 + 1);
             const raycaster = new THREE.Raycaster(); raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(planetMeshes, false);
-            
             if (intersects.length > 0) {
-                const obj = intersects[0].object;
-                const p = obj.userData;
-                selectedPlanet = p.name;
+                const obj = intersects[0].object; const p = obj.userData; selectedPlanet = p.name;
                 const worldPos = new THREE.Vector3(); obj.getWorldPosition(worldPos);
-                targetLookAt.copy(worldPos);
-                targetPos.set(worldPos.x + 30, worldPos.y + 20, worldPos.z + 40);
+                targetLookAt.copy(worldPos); targetPos.set(worldPos.x + 30, worldPos.y + 20, worldPos.z + 40);
                 isZoomed = true; isTransitioning = true; toggleMainUI(false); 
                 document.getElementById('info-box').style.display = 'block';
                 document.getElementById('reset-view').style.display = 'block';
                 document.getElementById('planet-name').innerHTML = `${p.icon} ${p.name}`;
                 document.getElementById('planet-rule').innerText = p.rule;
-                const atkBtn = document.getElementById('attack-btn');
-                const limMsg = document.getElementById('limiter-msg');
+                const atkBtn = document.getElementById('attack-btn'), limMsg = document.getElementById('limiter-msg');
                 if (activeInvaders.includes(currentCommander)) { atkBtn.classList.add('disabled-btn'); atkBtn.innerText = "VOX SATURATED"; limMsg.style.display = 'block'; } 
                 else { atkBtn.classList.remove('disabled-btn'); atkBtn.innerText = "DECLARE INVASION"; limMsg.style.display = 'none'; atkBtn.style.display = (p.player === currentCommander) ? 'none' : 'block'; }
                 document.getElementById('faction-label').innerText = `STATUS: ${p.faction.toUpperCase()}`;
@@ -304,15 +279,15 @@
                 planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
                 atmospheres.forEach(a => { a.rotation.y -= 0.005; }); 
                 neutralReticles.forEach(r => { r.rotation.y += 0.01; r.material.opacity = 0.3 + Math.random() * 0.4; });
-                if (isTransitioning) { camera.position.lerp(targetPos, 0.05); controls.target.lerp(targetLookAt, 0.05); if (camera.position.distanceTo(targetPos) < 1) { isTransitioning = false; } }
+                if (isTransitioning) { camera.position.lerp(targetPos, 0.05); controls.target.lerp(targetLookAt, 0.05); if (camera.position.distanceTo(targetPos) < 1) isTransitioning = false; }
                 controls.update(); renderer.render(scene, camera); 
             }
         }
         animate(); updateLeaderboard();
 
-        // --- VOID WAR ---
+        // --- VOID WAR (REMAINING CODE) ---
         const canvas = document.getElementById('game-canvas'); const ctx = canvas.getContext('2d'); const keys = {};
-        function toggleMiniGame() { isGameActive = !isGameActive; canvas.style.display = isGameActive ? 'block' : 'none'; document.getElementById('game-overlay').style.display = isGameActive ? 'block' : 'none'; document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War'; if (isGameActive) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; game.init(); requestAnimationFrame(gameLoop); } }
+        function toggleMiniGame() { isGameActive = !isGameActive; canvas.style.display = isGameActive ? 'block' : 'none'; document.getElementById('minigame-btn').innerText = isGameActive ? 'Exit Battle' : 'Void War'; if (isGameActive) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; game.init(); requestAnimationFrame(gameLoop); } }
         const game = {
             ship: { x: 0, y: 0, r: 25, angle: 0, velX: 0, velY: 0 }, asteroids: [], bullets: [], particles: [], score: 0,
             init() { this.ship = { x: canvas.width / 2, y: canvas.height / 2, r: 25, angle: -Math.PI / 2, velX: 0, velY: 0 }; this.asteroids = []; this.bullets = []; this.particles = []; this.score = 0; for (let i = 0; i < 6; i++) this.createAsteroid(); },
