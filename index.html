@@ -155,6 +155,7 @@
             "None": 0x8B0000
         };
 
+        // 24 Balanced Sector Coordinates Shuffled to Interleave Neutral Territories
         let PLANET_DATA = [
             { name: "Solemnace", dist: 35, size: 2.8, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Initial Necron Crown Core Zone.", initialNeutral: false },
             { name: "Damnos", dist: 50, size: 2.5, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Tomb World Awakening Array.", initialNeutral: false },
@@ -216,6 +217,7 @@
             toggleModal('admin-vault');
         }
 
+        // --- DYNAMIC SECTOR LOG COUPLING LOOP ---
         function processEngagements(logs) {
             PLANET_DATA.forEach(p => {
                 if (p.initialNeutral) {
@@ -231,7 +233,7 @@
                     targetPlanet.color = FACTION_COLORS[log.winnerFaction];
                     targetPlanet.rule = `CRITICAL DEPLOYMENT LOG DISCOVERED:\n\n` +
                                          `ENGAGEMENT: ${log.p1} (${log.f1}) VS ${log.p2} (${log.f2})\n` +
-                                         `WAR MATRIX SCORE: ${log.s1.toString()} VP to ${log.s2.toString()} VP.\n\n` +
+                                         `WAR MATRIX SCORE: ${String(log.s1)} VP to ${String(log.s2)} VP.\n\n` +
                                          `The strategic operations of the ${log.winnerFaction} phalanx forced tactical capitulation over their opponents. Fleet presence confirmed.`;
                 }
             });
@@ -241,7 +243,6 @@
                     planetMeshes[idx].material.color.setHex(p.color);
                     planetMeshes[idx].material.emissive.setHex(p.color);
                     
-                    // Update Text Label Mesh properties
                     const labelSprite = planetMeshes[idx].getObjectByName("holoLabel");
                     if(labelSprite) {
                         planetMeshes[idx].remove(labelSprite);
@@ -264,7 +265,7 @@
                     <td style="padding:8px;">${log.p1} vs ${log.p2}</td>
                     <td style="padding:8px; font-size:0.85em;">${log.f1} vs ${log.f2}</td>
                     <td style="padding:8px; color:#fff;">${log.winner}</td>
-                    <td style="padding:8px;">${log.s1.toString()} - ${log.s2.toString()}</td>
+                    <td style="padding:8px;">${String(log.s1)} - ${String(log.s2)}</td>
                 </tr>
             `).join('') || `<tr><td colspan="4" style="text-align:center; padding:20px; opacity:0.5;">[ NO LOGGED CAMPAIGNS ]</td></tr>`;
         }
@@ -299,7 +300,6 @@
             else { lb.classList.add('ui-hidden'); toggleBtn.classList.add('ui-hidden'); } 
         }
 
-        // --- MAP SYSTEM ARCHITECTURE ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -319,38 +319,7 @@
         scene.add(coreLight);
         scene.add(new THREE.Mesh(new THREE.SphereGeometry(14, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })));
 
-        // --- LOGIC CHANGE: FAINT BACKGROUND STAR FIELD ---
-        const starGeo = new THREE.BufferGeometry();
-        const starCount = 350;
-        const starPositions = new Float32Array(starCount * 3);
-        for(let i=0; i<starCount*3; i+=3) {
-            starPositions[i] = (Math.random() - 0.5) * 1600;
-            starPositions[i+1] = (Math.random() - 0.5) * 1600;
-            starPositions[i+2] = (Math.random() - 0.5) * 1600;
-        }
-        starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.5, transparent: true, opacity: 0.25 });
-        const starField = new THREE.Points(starGeo, starMat);
-        scene.add(starField);
-
         const planetMeshes = [], planetGroups = [], neutralReticles = [], atmospheres = [];
-
-        // --- LOGIC CHANGE: HOLOGRAPHIC BILLBOARD TEXT SPRITE GENERATOR ---
-        function createLabelSprite(text, colorHex) {
-            const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 40;
-            const ctx = canvas.getContext('2d');
-            ctx.font = 'Bold 20px "Special Elite", monospace';
-            ctx.fillStyle = "#" + new THREE.Color(colorHex).getHexString();
-            ctx.textAlign = 'center';
-            ctx.fillText(text === "NONE" ? "???" : text, 64, 26);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
-            const sprite = new THREE.Sprite(spriteMat);
-            sprite.name = "holoLabel";
-            sprite.scale.set(16, 5, 1);
-            return sprite;
-        }
 
         function generateNoiseTexture(colorBase) {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256;
@@ -363,6 +332,19 @@
                 imgData.data[i+3] = 255;
             }
             ctx.putImageData(imgData, 0, 0); return new THREE.CanvasTexture(canvas);
+        }
+
+        function createLabelSprite(text, colorHex) {
+            const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 40;
+            const ctx = canvas.getContext('2d');
+            ctx.font = 'Bold 20px "Special Elite", monospace';
+            ctx.fillStyle = "#" + new THREE.Color(colorHex).getHexString();
+            ctx.textAlign = 'center';
+            ctx.fillText(text === "NONE" ? "???" : text, 64, 26);
+            const texture = new THREE.CanvasTexture(canvas);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+            sprite.name = "holoLabel"; sprite.scale.set(16, 5, 1);
+            return sprite;
         }
 
         PLANET_DATA.forEach((data) => {
@@ -379,7 +361,6 @@
             const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.08, 16, 16), new THREE.MeshPhongMaterial({ color: data.color, transparent: true, opacity: 0.15, wireframe: true }));
             pMesh.add(cloud); atmospheres.push(cloud);
 
-            // Attach dynamic holographic identification marker text tag asset
             const labelSprite = createLabelSprite(data.player.toUpperCase(), data.color);
             labelSprite.position.y = data.size + 3.5;
             pMesh.add(labelSprite);
@@ -393,6 +374,12 @@
             group.add(pMesh); planetMeshes.push(pMesh);
             group.rotation.y = Math.random() * Math.PI * 2;
         });
+
+        // Background Star Field particle arrangement
+        const starGeo = new THREE.BufferGeometry(); const starCount = 350; const starPositions = new Float32Array(starCount * 3);
+        for(let i=0; i<starCount*3; i+=3) { starPositions[i] = (Math.random() - 0.5) * 1600; starPositions[i+1] = (Math.random() - 0.5) * 1600; starPositions[i+2] = (Math.random() - 0.5) * 1600; }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.5, transparent: true, opacity: 0.25 })));
 
         function initFleets(logs) {
             fleetLayer.clear(); activeFleets = [];
@@ -433,18 +420,13 @@
             const mouse = new THREE.Vector2((u.clientX / window.innerWidth) * 2 - 1, -(u.clientY / window.innerHeight) * 2 + 1);
             const raycaster = new THREE.Raycaster(); raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(planetMeshes, false);
-            
             if (intersects.length > 0) {
                 const obj = intersects[0].object; const p = obj.userData; selectedPlanet = p.name;
                 const worldPos = new THREE.Vector3(); obj.getWorldPosition(worldPos);
                 targetLookAt.copy(worldPos); targetPos.set(worldPos.x + 22, worldPos.y + 14, worldPos.z + 22);
-                
                 isZoomed = true; isTransitioning = true; toggleMainUI(false); 
-                document.getElementById('info-box').style.display = 'block';
-                document.getElementById('reset-view').style.display = 'block';
-                
-                document.getElementById('planet-name').innerText = p.name.toUpperCase();
-                document.getElementById('planet-rule').innerText = p.rule;
+                document.getElementById('info-box').style.display = 'block'; document.getElementById('reset-view').style.display = 'block';
+                document.getElementById('planet-name').innerText = p.name.toUpperCase(); document.getElementById('planet-rule').innerText = p.rule;
                 document.getElementById('faction-label').innerText = `COMMANDER: ${p.player.toUpperCase()} // FACTION: ${(p.army || 'UNOCCUPIED').toUpperCase()}`;
             }
         });
@@ -456,22 +438,13 @@
             planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
             atmospheres.forEach(a => { a.rotation.y -= 0.002; }); 
             neutralReticles.forEach(r => { r.rotation.y += 0.008; r.material.opacity = 0.3 + Math.random() * 0.3; });
-            
-            // Lock text sprites orientation facing straight forward at the active lens
-            planetMeshes.forEach(mesh => {
-                const sprite = mesh.getObjectByName("holoLabel");
-                if(sprite) sprite.quaternion.copy(camera.quaternion);
-            });
-
+            planetMeshes.forEach(mesh => { const sprite = mesh.getObjectByName("holoLabel"); if(sprite) sprite.quaternion.copy(camera.quaternion); });
             if (isTransitioning) { camera.position.lerp(targetPos, 0.06); controls.target.lerp(targetLookAt, 0.06); if (camera.position.distanceTo(targetPos) < 0.5) isTransitioning = false; }
-            updateFleetTrajectories();
-            controls.update();
-            renderer.render(scene, camera);
+            updateFleetTrajectories(); controls.update(); renderer.render(scene, camera);
         }
 
         updateFactionDropdown(1); updateFactionDropdown(2);
-        syncWarLog(); 
-        animate();
+        syncWarLog(); animate();
         setInterval(syncWarLog, 30000);
     </script>
 </body>
