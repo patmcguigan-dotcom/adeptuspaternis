@@ -10,26 +10,22 @@
         @keyframes globalFlicker { 0% { opacity: 0.99; } 5% { opacity: 0.95; } 10% { opacity: 0.98; } 100% { opacity: 1; } }
         @keyframes scanlineMove { 0% { bottom: 100%; } 100% { bottom: 0%; } }
 
-        body { margin: 0; background: radial-gradient(circle at center, #01050a 0%, #000000 100%); color: #00ff41; font-family: 'Special Elite', monospace; overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite; }
-        button { background: transparent; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; position: relative; z-index: 8000; padding: 5px 10px; }
+        body { margin: 0; background: radial-gradient(circle at center, #010a05 0%, #000000 100%); color: #00ff41; font-family: 'Special Elite', monospace; overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite; }
+        button { background: rgba(0, 10, 0, 0.6); border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; position: relative; z-index: 8000; padding: 8px 15px; box-shadow: 0 0 10px rgba(0,255,65,0.05); }
         button:hover { background: #00ff41; color: #000; box-shadow: 0 0 15px #00ff41; }
         
-        #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 30, 0, 0.4); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; pointer-events: none; }
+        #war-log-container { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: rgba(0, 20, 0, 0.6); border-bottom: 1px solid #00ff41; overflow: hidden; z-index: 7000; display: flex; align-items: center; pointer-events: none; }
         #war-log-text { white-space: nowrap; display: inline-block; padding-left: 100%; animation: ticker 45s linear infinite; font-size: 14px; letter-spacing: 2px; }
         
-        #leaderboard { position: absolute; top: 45px; left: 20px; width: 240px; background: rgba(0, 15, 0, 0.8); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; transition: 0.4s; }
+        #leaderboard { position: absolute; top: 45px; left: 20px; width: 240px; background: rgba(0, 15, 0, 0.85); border: 1px solid #00ff41; padding: 15px; z-index: 7500; font-size: 11px; box-shadow: 0 0 15px rgba(0,255,65,0.1); transition: 0.4s; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #004411; }
         
-        /* Non-overlapping top-right dashboard actions placement */
-        .top-btns { position: absolute; top: 45px; right: 20px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 7500; transition: 0.4s; }
-        .top-btns button { padding: 8px 15px; font-size: 11px; width: 120px; }
+        .top-btns { position: absolute; bottom: 25px; right: 20px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; z-index: 7500; transition: 0.4s; }
+        .top-btns button { font-size: 12px; min-width: 140px; padding: 12px; font-weight: bold; }
         .ui-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(-10px); }
 
-        #info-box { position: absolute; right: 20px; top: 100px; width: 300px; background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; display: none; z-index: 8500; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
-        @media (max-width: 600px) { 
-            #info-box { width: 90%; left: 5%; right: auto; top: 85px; } 
-            .top-btns { top: 40px; right: 20px; }
-        }
+        #info-box { position: absolute; right: 20px; top: 45px; width: 300px; background: rgba(2, 8, 2, 0.95); border: 1px solid #00ff41; padding: 20px; display: none; z-index: 8500; box-shadow: 0 0 20px rgba(0,255,65,0.2); }
+        @media (max-width: 600px) { #info-box { width: 90%; left: 5%; right: auto; top: 40px; } }
 
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.98); z-index: 11000; display: none; flex-direction: column; align-items: center; padding-top: 40px; overflow-y: auto; }
         .modal-active { display: flex !important; }
@@ -37,8 +33,8 @@
         
         select, input { background: #000; border: 1px solid #00ff41; color: #00ff41; padding: 8px; font-family: inherit; margin: 5px 0; width: 100%; box-sizing: border-box; }
         
-        #instructions { position: absolute; bottom: 0; left: 0; padding: 40px; font-size: 9px; color: #003311; z-index: 10000; cursor: pointer; user-select: none; }
-        #reset-view { position: absolute; bottom: 40px; right: 20px; padding: 15px 25px; display: none; z-index: 7500; color: #ff4444; border-color: #ff4444; }
+        #instructions { position: absolute; bottom: 0; left: 0; padding: 25px; font-size: 9px; color: #004411; z-index: 10000; cursor: pointer; user-select: none; }
+        #reset-view { width: 140px; color: #ff4444; border-color: #ff4444; background: rgba(20,0,0,0.4); display: none; }
     </style>
 </head>
 <body>
@@ -51,7 +47,8 @@
     </div>
     
     <div class="top-btns">
-        <button onclick="toggleModal('archive-overlay')">Scoreboard</button>
+        <button id="reset-view" onclick="resetSectorView()">[ EXIT SURVEY ]</button>
+        <button id="score-toggle" onclick="toggleModal('archive-overlay')">Scoreboard</button>
     </div>
 
     <div id="archive-overlay" class="fullscreen-modal">
@@ -132,15 +129,14 @@
         </div>
     </div>
 
-    <button id="reset-view" onclick="resetSectorView()">[ EXIT SURVEY ]</button>
     <div id="instructions" onpointerdown="handleAdminTap()">COGITATOR OMNISSIAH-G6 // [ACCESS VAULT]</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // --- PASTE YOUR NEW GOOGLE WEB APP URL HERE ---
-        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbxSRx6a1NB0zlbl1EAEr9rNsf2V9fhiOnU8CeT93uvaJRmIVQ6Mo6pWWGE51WuGi8oN/exec"; 
+        // --- SECURE ANCHORAGE TO LIVE DATABASE SCRIPT URL ---
+        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbSRx6a1NB0zlbl1EAEr9rNsf2V9fhiOnU8CeT93uvaJRmIVQ6Mo6pWWGE51WuGi8oN/exec"; 
 
         const PLAYER_ARMIES = {
             "Josh": ["Tyranids", "Space Marines (Salamanders)"],
@@ -161,37 +157,44 @@
             "None": 0x8B0000
         };
 
-        // 24 Balanced Sector System Coordinates Mapped Locally
+        // 24 Balanced Sector Coordinates Shuffled to Interleave Neutral Territories
         let PLANET_DATA = [
             { name: "Solemnace", dist: 35, size: 2.8, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Initial Necron Crown Core Zone." },
             { name: "Damnos", dist: 50, size: 2.5, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Tomb World Awakening Array." },
             { name: "Gidreem", dist: 65, size: 2.3, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Dynastic Resource Core." },
-            { name: "Quintus", dist: 80, size: 2.4, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Perimeter Gauss Outpost." },
             
-            { name: "T'au Prime", dist: 95, size: 3.2, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Sept World Center Node." },
-            { name: "Vior'la", dist: 110, size: 2.9, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Fire Caste Staging Field." },
-            { name: "Fenris Core", dist: 125, size: 3.1, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Space Wolves Sector Hold." },
-            { name: "Asaheim", dist: 140, size: 2.6, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Fortress Anchor Point." },
+            // Unoccupied Mars intercalated inside the inner system
+            { name: "Mars Prime", size: 3.8, dist: 78, color: 0x8B0000, player: "None", army: "None", rule: "Mechanicus Vault Zone. Unoccupied." },
             
-            { name: "Tyran Primus", dist: 155, size: 2.8, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Bio-Mass Consumption Nest." },
-            { name: "Octarius Alpha", dist: 170, size: 3.3, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Hive Fleet Leviathan Spore-Zone." },
-            { name: "Nocturne Prime", size: 3.5, dist: 185, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Promethium Reserve: Re-roll one Wound roll of 1 for Melta/Torrent." },
-            { name: "Prometheus", size: 3.2, dist: 200, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Vulkan's Anvil: +1 to armor save metrics against AP-1 weapons." },
+            { name: "Quintus", dist: 95, size: 2.4, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Perimeter Gauss Outpost." },
+            { name: "T'au Prime", dist: 110, size: 3.2, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Sept World Center Node." },
+            { name: "Vior'la", dist: 125, size: 2.9, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Fire Caste Staging Field." },
             
-            { name: "Biel-Tan Outpost", size: 4.0, dist: 220, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Way of the Warrior: +1 to Advance rolls." },
-            { name: "Iyanden Anchor", size: 3.3, dist: 235, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Ghost-Warrior Array: Target ignores Battle-Shock." },
-            { name: "Alaitoc Rift", size: 2.7, dist: 250, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Path of the Ranger: Units targeting this world incur -1 to Hit rolls." },
-            { name: "Saim-Hann Reach", size: 3.1, dist: 265, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Wild Rider Charge: Mounted options gain fallback and charge capability." },
+            // Unoccupied Armageddon dropped between T'au and Space Wolves
+            { name: "Armageddon Core", size: 3.2, dist: 142, color: 0x8B0000, player: "None", army: "None", rule: "Industrial Hive Outpost. Unoccupied." },
             
-            { name: "Macragge", size: 4.2, dist: 285, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Ultramar Discipline: Re-roll failed Leadership tests." },
-            { name: "Phall", size: 2.9, dist: 300, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Dorn's Bulwark: Stationary Cover bonus matrix." },
-            { name: "Calth", size: 3.4, dist: 315, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Underground Bastions: Detachments receive critical defensive saves." },
-            { name: "Rynn's World", size: 3.0, dist: 330, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Crimson Vengeance: Re-roll hit vectors if numerical disadvantage occurs." },
-
-            { name: "Mars Prime", size: 3.8, dist: 355, color: 0x8B0000, player: "None", army: "None", rule: "Mechanicus Vault Zone. Unoccupied." },
-            { name: "Armageddon Core", size: 3.2, dist: 375, color: 0x8B0000, player: "None", army: "None", rule: "Industrial Hive Outpost. Unoccupied." },
-            { name: "Necromunda Sector", size: 3.6, dist: 395, color: 0x8B0000, player: "None", army: "None", rule: "Hive World Perimeter. Unoccupied." },
-            { name: "Cadia Secundus", size: 3.4, dist: 415, color: 0x8B0000, player: "None", army: "None", rule: "Imperial Bastion Core. Unoccupied." }
+            { name: "Fenris Core", dist: 160, size: 3.1, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Space Wolves Sector Hold." },
+            { name: "Asaheim", dist: 175, size: 2.6, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Fortress Anchor Point." },
+            { name: "Tyran Primus", dist: 190, size: 2.8, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Bio-Mass Consumption Nest." },
+            { name: "Octarius Alpha", dist: 205, size: 3.3, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Hive Fleet Leviathan Spore-Zone." },
+            
+            // Unoccupied Necromunda mounted inside the mid-rim systems cluster
+            { name: "Necromunda Sector", size: 3.6, dist: 220, color: 0x8B0000, player: "None", army: "None", rule: "Hive World Perimeter. Unoccupied." },
+            
+            { name: "Nocturne Prime", size: 3.5, dist: 240, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Promethium Reserve: Re-roll one Wound roll of 1 for Melta/Torrent." },
+            { name: "Prometheus", size: 3.2, dist: 255, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Vulkan's Anvil: +1 to armor save metrics against AP-1 weapons." },
+            { name: "Biel-Tan Outpost", size: 4.0, dist: 270, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Way of the Warrior: +1 to Advance rolls." },
+            { name: "Iyanden Anchor", size: 3.3, dist: 285, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Ghost-Warrior Array: Target ignores Battle-Shock." },
+            
+            // Unoccupied Cadia structured deep inside the outer systems line
+            { name: "Cadia Secundus", size: 3.4, dist: 300, color: 0x8B0000, player: "None", army: "None", rule: "Imperial Bastion Core. Unoccupied." },
+            
+            { name: "Alaitoc Rift", size: 2.7, dist: 320, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Path of the Ranger: Units targeting this world incur -1 to Hit rolls." },
+            { name: "Saim-Hann Reach", size: 3.1, dist: 335, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Wild Rider Charge: Mounted options gain fallback and charge capability." },
+            { name: "Macragge", size: 4.2, dist: 355, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Ultramar Discipline: Re-roll failed Leadership tests." },
+            { name: "Phall", size: 2.9, dist: 375, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Dorn's Bulwark: Stationary Cover bonus matrix." },
+            { name: "Calth", size: 3.4, dist: 395, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Underground Bastions: Detachments receive critical defensive saves." },
+            { name: "Rynn's World", size: 3.0, dist: 415, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Crimson Vengeance: Re-roll hit vectors if numerical disadvantage occurs." }
         ];
 
         let BATTLE_LOGS = [];
@@ -216,26 +219,25 @@
 
             const winner = vicChoice === "1" ? p1 : p2;
             const winnerFaction = vicChoice === "1" ? f1 : f2;
-
             const payload = { p1, f1, s1, p2, f2, s2, winner, winnerFaction };
 
-            // PUSH TO LIVE SHEET BACKGROUND
-            if (VOX_LINK_URL !== "YOUR_NEW_GOOGLE_APP_SCRIPT_URL_HERE") {
+            if (VOX_LINK_URL !== "") {
                 try {
                     await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
-                } catch(e) { console.log("Database Sync Warning"); }
+                } catch(e) { console.log("Sync Exception Handled"); }
             }
 
-            // Fallback immediate local cache emulation execution
             BATTLE_LOGS.push(payload);
             processEngagements(BATTLE_LOGS);
             toggleModal('admin-vault');
         }
 
         function processEngagements(logs) {
-            // Reset to defaults safely
-            PLANET_DATA.forEach((p, idx) => {
-                if (idx >= 20) { p.player = "None"; p.army = "None"; p.color = 0x8B0000; p.rule = "Imperial Bastion Core. Unoccupied."; }
+            // Re-apply indices map resets for frontier index layers slots
+            const initialNeutralIndices = [3, 7, 12, 17];
+            initialNeutralIndices.forEach(idx => {
+                let p = PLANET_DATA[idx];
+                p.player = "None"; p.army = "None"; p.color = 0x8B0000; p.rule = "Territorial System Core Axis. Unoccupied.";
             });
 
             logs.forEach(log => {
@@ -244,14 +246,13 @@
                     targetPlanet.player = log.winner;
                     targetPlanet.army = log.winnerFaction;
                     targetPlanet.color = FACTION_COLORS[log.winnerFaction];
-                    targetPlanet.rule = `CRITICAL RECORD DISCOVERED:\n\n` +
+                    targetPlanet.rule = `CRITICAL DEPLOYMENT LOG DISCOVERED:\n\n` +
                                          `ENGAGEMENT: ${log.p1} (${log.f1}) VS ${log.p2} (${log.f2})\n` +
                                          `WAR MATRIX SCORE: ${log.s1} VP to ${log.s2} VP.\n\n` +
-                                         `This strategic conflict matched historic records of macro-warfare. The tactical execution of the ${log.winnerFaction} forces successfully completed territorial containment vectors over their rivals.`;
+                                         `The strategic operations of the ${log.winnerFaction} phalanx forced tactical capitulation over their opponents. Fleet presence confirmed.`;
                 }
             });
 
-            // Re-render asset meshes colors properties mapping loop
             PLANET_DATA.forEach((p, idx) => {
                 if(planetMeshes[idx]) {
                     planetMeshes[idx].material.color.setHex(p.color);
@@ -287,23 +288,26 @@
         }
 
         async function syncWarLog() {
-            if (VOX_LINK_URL === "YOUR_NEW_GOOGLE_APP_SCRIPT_URL_HERE") return;
             try {
                 const response = await fetch(VOX_LINK_URL);
                 BATTLE_LOGS = await response.json();
                 processEngagements(BATTLE_LOGS);
-                
                 let reportString = "SYSTEM STATUS: NOMINAL // COGITATOR LINK STABLE // ";
-                const news = BATTLE_LOGS.slice(-3).reverse().map(l => `${l.winnerFaction.toUpperCase()} ACQUIRED NEW TERRITORY AGAINST ${l.winner === l.p1 ? l.f2.toUpperCase() : l.f1.toUpperCase()}`);
+                const news = BATTLE_LOGS.slice(-3).reverse().map(l => `${l.winnerFaction.toUpperCase()} MANIFESTED SUB-SECTOR POWER ADVANCEMENTS`);
                 document.getElementById('war-log-text').innerText = reportString + (news.length ? news.join(" // ") + " // " : "NO RECENT SECTOR CHANGES // ");
             } catch (e) {}
         }
 
         function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; if (navigator.vibrate) navigator.vibrate(50); } setTimeout(() => tapCount = 0, 3000); }
         function toggleModal(id) { document.getElementById(id).classList.toggle('modal-active'); }
-        function toggleMainUI(show) { const group = [document.getElementById('leaderboard'), document.querySelector('.top-btns')]; group.forEach(el => { if (show) el.classList.remove('ui-hidden'); else el.classList.add('ui-hidden'); }); }
+        
+        function toggleMainUI(show) { 
+            const lb = document.getElementById('leaderboard');
+            const toggleBtn = document.getElementById('score-toggle');
+            if (show) { lb.classList.remove('ui-hidden'); toggleBtn.classList.remove('ui-hidden'); } 
+            else { lb.classList.add('ui-hidden'); toggleBtn.classList.add('ui-hidden'); } 
+        }
 
-        // --- ENGINE ARCHITECTURE RESTORED PERMANENTLY ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -313,36 +317,43 @@
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         camera.position.set(0, 400, 700); controls.enableDamping = true;
-        scene.add(new THREE.AmbientLight(0x224422, 0.6));
+        scene.add(new THREE.AmbientLight(0x335533, 0.8));
         
-        const beamLight = new THREE.PointLight(0x00ff41, 4, 2000);
-        scene.add(beamLight);
+        const rimScannerLight = new THREE.DirectionalLight(0xffffff, 1.8);
+        rimScannerLight.position.set(5, 12, 8);
+        scene.add(rimScannerLight);
+        
+        const coreLight = new THREE.PointLight(0x00ff41, 5, 2500);
+        scene.add(coreLight);
         scene.add(new THREE.Mesh(new THREE.SphereGeometry(14, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })));
 
         const planetMeshes = [], planetGroups = [], neutralReticles = [], atmospheres = [];
 
         function generateNoiseTexture(colorBase) {
-            const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
-            const ctx = canvas.getContext('2d'); const imgData = ctx.createImageData(128, 128);
+            const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d'); const imgData = ctx.createImageData(256, 256);
             for (let i = 0; i < imgData.data.length; i += 4) {
-                const noise = Math.random() * 40; const c = new THREE.Color(colorBase);
-                imgData.data[i] = (c.r * 255) - noise; imgData.data[i+1] = (c.g * 255) - noise; imgData.data[i+2] = (c.b * 255) - noise; imgData.data[i+3] = 255;
+                const noise = Math.random() * 85; const c = new THREE.Color(colorBase);
+                imgData.data[i] = Math.max(0, (c.r * 255) - noise);
+                imgData.data[i+1] = Math.max(0, (c.g * 255) - noise);
+                imgData.data[i+2] = Math.max(0, (c.b * 255) - noise);
+                imgData.data[i+3] = 255;
             }
             ctx.putImageData(imgData, 0, 0); return new THREE.CanvasTexture(canvas);
         }
 
-        PLANET_DATA.forEach((data) => {
+        PLANET_DATA.forEach((data, pIdx) => {
             const group = new THREE.Group(); scene.add(group); planetGroups.push(group);
-            group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * 0.5;
+            group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * 0.4;
             
-            const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.5, data.dist + 0.5, 64), new THREE.MeshBasicMaterial({ color: 0x00ff55, transparent: true, opacity: 0.1, side: THREE.DoubleSide }));
+            const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.5, data.dist + 0.5, 64), new THREE.MeshBasicMaterial({ color: 0x00ff55, transparent: true, opacity: 0.08, side: THREE.DoubleSide }));
             ring.rotation.x = Math.PI / 2; scene.add(ring);
 
             const tex = generateNoiseTexture(data.color);
-            const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ map: tex, bumpMap: tex, color: data.color, emissive: data.color, emissiveIntensity: (data.player === "None" ? 0.4 : 0.15) }));
+            const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ map: tex, bumpMap: tex, color: data.color, emissive: data.color, emissiveIntensity: (data.player === "None" ? 0.6 : 0.4), roughness: 0.6, metalness: 0.1 }));
             pMesh.userData = data;
 
-            const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.08, 16, 16), new THREE.MeshPhongMaterial({ color: data.color, transparent: true, opacity: 0.12, wireframe: true }));
+            const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.08, 16, 16), new THREE.MeshPhongMaterial({ color: data.color, transparent: true, opacity: 0.15, wireframe: true }));
             pMesh.add(cloud); atmospheres.push(cloud);
 
             if (data.player === "None") {
@@ -357,14 +368,16 @@
 
         function initFleets(logs) {
             fleetLayer.clear(); activeFleets = [];
+            const initialNeutralIndices = [3, 7, 12, 17];
             logs.forEach((log, lIdx) => {
-                if (lIdx >= 4) return; // Hard upper bounds protection cap
-                const targetPlanet = PLANET_DATA[20 + lIdx];
-                const friendly = PLANET_DATA.filter((p, i) => p.player === log.winner && i < 20);
+                if (lIdx >= 4) return;
+                const targetIndex = initialNeutralIndices[lIdx];
+                const targetPlanet = PLANET_DATA[targetIndex];
+                const friendly = PLANET_DATA.filter((p, i) => p.player === log.winner && !initialNeutralIndices.includes(i));
                 if (!targetPlanet || !friendly.length) return;
 
                 let baseWorld = friendly[0];
-                let targetMesh = planetMeshes[20 + lIdx];
+                let targetMesh = planetMeshes[targetIndex];
                 let originMesh = planetMeshes[PLANET_DATA.indexOf(baseWorld)];
 
                 const line = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: FACTION_COLORS[log.winnerFaction], dashSize: 2, gapSize: 2 }));
@@ -408,7 +421,6 @@
 
         function resetSectorView() { isZoomed = false; isTransitioning = true; targetPos.set(0, 400, 700); targetLookAt.set(0, 0, 0); document.getElementById('info-box').style.display = 'none'; document.getElementById('reset-view').style.display = 'none'; toggleMainUI(true); }
 
-        // Continuous rendering loop fully functional and verified
         function animate() {
             requestAnimationFrame(animate);
             planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
@@ -423,7 +435,7 @@
         updateFactionDropdown(1); updateFactionDropdown(2);
         updateLeaderboard(); rebuildArchiveTable(); syncWarLog(); 
         animate();
-        if(VOX_LINK_URL !== "YOUR_NEW_GOOGLE_APP_SCRIPT_URL_HERE") setInterval(syncWarLog, 45000);
+        setInterval(syncWarLog, 45000);
     </script>
 </body>
 </html>
