@@ -8,7 +8,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         @keyframes globalFlicker { 0% { opacity: 0.99; } 5% { opacity: 0.95; } 10% { opacity: 0.98; } 100% { opacity: 1; } }
-        @keyframes scanlineMove { 0% { bottom: 100%; } 100% { bottom: 0%; } }
 
         body { margin: 0; background: radial-gradient(circle at center, #010a05 0%, #000000 100%); color: #00ff41; font-family: 'Special Elite', monospace; overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite; }
         button { background: rgba(0, 10, 0, 0.6); border: 1px solid #00ff41; color: #00ff41; font-family: inherit; cursor: pointer; text-transform: uppercase; transition: 0.2s; position: relative; z-index: 8000; padding: 8px 15px; box-shadow: 0 0 10px rgba(0,255,65,0.05); }
@@ -135,7 +134,7 @@
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbxSRx6a1NB0zlbl1EAEr9rNsf2V9fhiOnU8CeT93uvaJRmIVQ6Mo6pWWGE51WuGi8oN/exec"; 
+        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbSRx6a1NB0zlbl1EAEr9rNsf2V9fhiOnU8CeT93uvaJRmIVQ6Mo6pWWGE51WuGi8oN/exec"; 
 
         const PLAYER_ARMIES = {
             "Josh": ["Tyranids", "Space Marines (Salamanders)"],
@@ -156,34 +155,25 @@
             "None": 0x8B0000
         };
 
-        // 24 Balanced Sector Coordinates Shuffled to Interleave Neutral Territories
         let PLANET_DATA = [
             { name: "Solemnace", dist: 35, size: 2.8, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Initial Necron Crown Core Zone.", initialNeutral: false },
             { name: "Damnos", dist: 50, size: 2.5, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Tomb World Awakening Array.", initialNeutral: false },
             { name: "Gidreem", dist: 65, size: 2.3, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Dynastic Resource Core.", initialNeutral: false },
-            
             { name: "Mars Prime", size: 3.8, dist: 78, color: 0x8B0000, player: "None", army: "None", rule: "Mechanicus Vault Zone. Unoccupied.", initialNeutral: true },
-            
             { name: "Quintus", dist: 95, size: 2.4, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Perimeter Gauss Outpost.", initialNeutral: false },
             { name: "T'au Prime", dist: 110, size: 3.2, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Sept World Center Node.", initialNeutral: false },
             { name: "Vior'la", dist: 125, size: 2.9, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Fire Caste Staging Field.", initialNeutral: false },
-            
             { name: "Armageddon Core", size: 3.2, dist: 142, color: 0x8B0000, player: "None", army: "None", rule: "Industrial Hive Outpost. Unoccupied.", initialNeutral: true },
-            
             { name: "Fenris Core", dist: 160, size: 3.1, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Space Wolves Sector Hold.", initialNeutral: false },
             { name: "Asaheim", dist: 175, size: 2.6, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Fortress Anchor Point.", initialNeutral: false },
             { name: "Tyran Primus", dist: 190, size: 2.8, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Bio-Mass Consumption Nest.", initialNeutral: false },
             { name: "Octarius Alpha", dist: 205, size: 3.3, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Hive Fleet Leviathan Spore-Zone.", initialNeutral: false },
-            
             { name: "Necromunda Sector", size: 3.6, dist: 220, color: 0x8B0000, player: "None", army: "None", rule: "Hive World Perimeter. Unoccupied.", initialNeutral: true },
-            
             { name: "Nocturne Prime", size: 3.5, dist: 240, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Promethium Reserve: Re-roll one Wound roll of 1 for Melta/Torrent.", initialNeutral: false },
             { name: "Prometheus", size: 3.2, dist: 255, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Vulkan's Anvil: +1 to armor save metrics against AP-1 weapons.", initialNeutral: false },
             { name: "Biel-Tan Outpost", size: 4.0, dist: 270, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Way of the Warrior: +1 to Advance rolls.", initialNeutral: false },
             { name: "Iyanden Anchor", size: 3.3, dist: 285, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Ghost-Warrior Array: Target ignores Battle-Shock.", initialNeutral: false },
-            
             { name: "Cadia Secundus", size: 3.4, dist: 300, color: 0x8B0000, player: "None", army: "None", rule: "Imperial Bastion Core. Unoccupied.", initialNeutral: true },
-            
             { name: "Alaitoc Rift", size: 2.7, dist: 320, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Path of the Ranger: Units targeting this world incur -1 to Hit rolls.", initialNeutral: false },
             { name: "Saim-Hann Reach", size: 3.1, dist: 335, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Wild Rider Charge: Mounted options gain fallback and charge capability.", initialNeutral: false },
             { name: "Macragge", size: 4.2, dist: 355, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Ultramar Discipline: Re-roll failed Leadership tests.", initialNeutral: false },
@@ -219,26 +209,20 @@
             if (VOX_LINK_URL !== "") {
                 try {
                     await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
-                    alert("TRANSMISSION LOGGED TO CLOUD ARCHIVE");
-                } catch(e) { console.log("Sync Error Handled"); }
+                } catch(e) {}
             }
-
-            // Fallback layout activation
             BATTLE_LOGS.push(payload);
             processEngagements(BATTLE_LOGS);
             toggleModal('admin-vault');
         }
 
-        // --- FIXED PROCESSING RAYCAST LOOP ---
         function processEngagements(logs) {
-            // Reset ALL historical pool slots using the flag instead of hardcoded numbers
             PLANET_DATA.forEach(p => {
                 if (p.initialNeutral) {
                     p.player = "None"; p.army = "None"; p.color = 0x8B0000; p.rule = "Territorial System Core Axis. Unoccupied.";
                 }
             });
 
-            // Re-allocate winners dynamically
             logs.forEach(log => {
                 const targetPlanet = PLANET_DATA.find(p => p.player === "None" && p.initialNeutral);
                 if (targetPlanet) {
@@ -252,17 +236,20 @@
                 }
             });
 
-            // Render loop values updates
             PLANET_DATA.forEach((p, idx) => {
                 if(planetMeshes[idx]) {
                     planetMeshes[idx].material.color.setHex(p.color);
                     planetMeshes[idx].material.emissive.setHex(p.color);
                     
-                    // Drop reticle cleanly if claimed
-                    const ret = neutralReticles.find(r => r.parent === planetMeshes[idx]);
-                    if(ret && p.player !== "None") {
-                        planetMeshes[idx].remove(ret);
+                    // Update Text Label Mesh properties
+                    const labelSprite = planetMeshes[idx].getObjectByName("holoLabel");
+                    if(labelSprite) {
+                        planetMeshes[idx].remove(labelSprite);
+                        planetMeshes[idx].add(createLabelSprite(p.player.toUpperCase(), p.color));
                     }
+
+                    const ret = neutralReticles.find(r => r.parent === planetMeshes[idx]);
+                    if(ret && p.player !== "None") planetMeshes[idx].remove(ret);
                 }
             });
 
@@ -312,6 +299,7 @@
             else { lb.classList.add('ui-hidden'); toggleBtn.classList.add('ui-hidden'); } 
         }
 
+        // --- MAP SYSTEM ARCHITECTURE ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -331,7 +319,38 @@
         scene.add(coreLight);
         scene.add(new THREE.Mesh(new THREE.SphereGeometry(14, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true })));
 
+        // --- LOGIC CHANGE: FAINT BACKGROUND STAR FIELD ---
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 350;
+        const starPositions = new Float32Array(starCount * 3);
+        for(let i=0; i<starCount*3; i+=3) {
+            starPositions[i] = (Math.random() - 0.5) * 1600;
+            starPositions[i+1] = (Math.random() - 0.5) * 1600;
+            starPositions[i+2] = (Math.random() - 0.5) * 1600;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.5, transparent: true, opacity: 0.25 });
+        const starField = new THREE.Points(starGeo, starMat);
+        scene.add(starField);
+
         const planetMeshes = [], planetGroups = [], neutralReticles = [], atmospheres = [];
+
+        // --- LOGIC CHANGE: HOLOGRAPHIC BILLBOARD TEXT SPRITE GENERATOR ---
+        function createLabelSprite(text, colorHex) {
+            const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 40;
+            const ctx = canvas.getContext('2d');
+            ctx.font = 'Bold 20px "Special Elite", monospace';
+            ctx.fillStyle = "#" + new THREE.Color(colorHex).getHexString();
+            ctx.textAlign = 'center';
+            ctx.fillText(text === "NONE" ? "???" : text, 64, 26);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.name = "holoLabel";
+            sprite.scale.set(16, 5, 1);
+            return sprite;
+        }
 
         function generateNoiseTexture(colorBase) {
             const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256;
@@ -346,7 +365,7 @@
             ctx.putImageData(imgData, 0, 0); return new THREE.CanvasTexture(canvas);
         }
 
-        PLANET_DATA.forEach((data, pIdx) => {
+        PLANET_DATA.forEach((data) => {
             const group = new THREE.Group(); scene.add(group); planetGroups.push(group);
             group.userData.orbitalSpeed = (0.01 / Math.sqrt(data.dist)) * 0.4;
             
@@ -360,6 +379,11 @@
             const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.08, 16, 16), new THREE.MeshPhongMaterial({ color: data.color, transparent: true, opacity: 0.15, wireframe: true }));
             pMesh.add(cloud); atmospheres.push(cloud);
 
+            // Attach dynamic holographic identification marker text tag asset
+            const labelSprite = createLabelSprite(data.player.toUpperCase(), data.color);
+            labelSprite.position.y = data.size + 3.5;
+            pMesh.add(labelSprite);
+
             if (data.player === "None") {
                 const ret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.OctahedronGeometry(data.size * 1.5, 0)), new THREE.LineBasicMaterial({ color: 0xFF0000, transparent: true, opacity: 0.4 }));
                 pMesh.add(ret); neutralReticles.push(ret);
@@ -370,21 +394,15 @@
             group.rotation.y = Math.random() * Math.PI * 2;
         });
 
-        // --- FIXED STRUCTURAL FLEET PARSER ---
         function initFleets(logs) {
             fleetLayer.clear(); activeFleets = [];
-            
-            // Get all indices flagged as initial neutrals
             const neutralIndices = [];
             PLANET_DATA.forEach((p, idx) => { if(p.initialNeutral) neutralIndices.push(idx); });
 
             logs.forEach((log, lIdx) => {
-                if (lIdx >= neutralIndices.length) return; // Prevent index overruns
-                
+                if (lIdx >= neutralIndices.length) return;
                 const targetIndex = neutralIndices[lIdx];
                 const targetPlanet = PLANET_DATA[targetIndex];
-                
-                // Find closest world currently under control of that player
                 const friendly = PLANET_DATA.filter((p, i) => p.player === log.winner && !p.initialNeutral);
                 if (!targetPlanet || !friendly.length) return;
 
@@ -438,6 +456,13 @@
             planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
             atmospheres.forEach(a => { a.rotation.y -= 0.002; }); 
             neutralReticles.forEach(r => { r.rotation.y += 0.008; r.material.opacity = 0.3 + Math.random() * 0.3; });
+            
+            // Lock text sprites orientation facing straight forward at the active lens
+            planetMeshes.forEach(mesh => {
+                const sprite = mesh.getObjectByName("holoLabel");
+                if(sprite) sprite.quaternion.copy(camera.quaternion);
+            });
+
             if (isTransitioning) { camera.position.lerp(targetPos, 0.06); controls.target.lerp(targetLookAt, 0.06); if (camera.position.distanceTo(targetPos) < 0.5) isTransitioning = false; }
             updateFleetTrajectories();
             controls.update();
@@ -447,7 +472,7 @@
         updateFactionDropdown(1); updateFactionDropdown(2);
         syncWarLog(); 
         animate();
-        setInterval(syncWarLog, 30000); // Check for external changes every 30 seconds
+        setInterval(syncWarLog, 30000);
     </script>
 </body>
 </html>
