@@ -155,7 +155,6 @@
             "None": 0x8B0000
         };
 
-        // 24 Balanced Sector Coordinates Shuffled to Interleave Neutral Territories
         let PLANET_DATA = [
             { name: "Solemnace", dist: 35, size: 2.8, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Initial Necron Crown Core Zone.", initialNeutral: false },
             { name: "Damnos", dist: 50, size: 2.5, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Tomb World Awakening Array.", initialNeutral: false },
@@ -217,7 +216,6 @@
             toggleModal('admin-vault');
         }
 
-        // --- DYNAMIC SECTOR LOG COUPLING LOOP ---
         function processEngagements(logs) {
             PLANET_DATA.forEach(p => {
                 if (p.initialNeutral) {
@@ -375,7 +373,6 @@
             group.rotation.y = Math.random() * Math.PI * 2;
         });
 
-        // Background Star Field particle arrangement
         const starGeo = new THREE.BufferGeometry(); const starCount = 350; const starPositions = new Float32Array(starCount * 3);
         for(let i=0; i<starCount*3; i+=3) { starPositions[i] = (Math.random() - 0.5) * 1600; starPositions[i+1] = (Math.random() - 0.5) * 1600; starPositions[i+2] = (Math.random() - 0.5) * 1600; }
         starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
@@ -431,20 +428,45 @@
             }
         });
 
-        function resetSectorView() { isZoomed = false; isTransitioning = true; targetPos.set(0, 400, 700); targetLookAt.set(0, 0, 0); document.getElementById('info-box').style.display = 'none'; document.getElementById('reset-view').style.display = 'none'; toggleMainUI(true); }
+        function resetSectorView() { 
+            isZoomed = false; 
+            isTransitioning = true; 
+            targetPos.set(0, 400, 700); 
+            targetLookAt.set(0, 0, 0); 
+            document.getElementById('info-box').style.display = 'none'; 
+            document.getElementById('reset-view').style.display = 'none'; 
+            toggleMainUI(true); 
+        }
 
+        // --- FIXED TRANSITION LOGIC UNCHOKE ---
         function animate() {
             requestAnimationFrame(animate);
             planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
             atmospheres.forEach(a => { a.rotation.y -= 0.002; }); 
             neutralReticles.forEach(r => { r.rotation.y += 0.008; r.material.opacity = 0.3 + Math.random() * 0.3; });
             planetMeshes.forEach(mesh => { const sprite = mesh.getObjectByName("holoLabel"); if(sprite) sprite.quaternion.copy(camera.quaternion); });
-            if (isTransitioning) { camera.position.lerp(targetPos, 0.06); controls.target.lerp(targetLookAt, 0.06); if (camera.position.distanceTo(targetPos) < 0.5) isTransitioning = false; }
-            updateFleetTrajectories(); controls.update(); renderer.render(scene, camera);
+            
+            if (isTransitioning) { 
+                camera.position.lerp(targetPos, 0.06); 
+                controls.target.lerp(targetLookAt, 0.06); 
+                // Fix: Release controls seamlessly upon arrival to prevent snapping loops
+                if (camera.position.distanceTo(targetPos) < 1.0) { 
+                    isTransitioning = false; 
+                } 
+            }
+            
+            updateFleetTrajectories(); 
+            controls.update(); 
+            renderer.render(scene, camera);
         }
 
+        // Correct bootstrapping order loop to avoid async race condition drops
         updateFactionDropdown(1); updateFactionDropdown(2);
-        syncWarLog(); animate();
+        updateLeaderboard(); rebuildArchiveTable();
+        
+        // Execute dynamic synchronization after meshes exist
+        syncWarLog(); 
+        animate();
         setInterval(syncWarLog, 30000);
     </script>
 </body>
