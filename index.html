@@ -41,7 +41,7 @@
     <div id="war-log-container"><div id="war-log-text">SYSTEM STATUS: NOMINAL // SCANNING SECTOR COGITATOR CHANNELS...</div></div>
 
     <div id="leaderboard">
-        <h3>Sector Supremacy</h3>
+        <h3>Campaign Scoreboard</h3>
         <div id="rankings-list"></div>
     </div>
     
@@ -50,9 +50,10 @@
         <button id="score-toggle" onclick="toggleModal('archive-overlay')">Scoreboard</button>
     </div>
 
+    <!-- SCOREBOARD MODAL -->
     <div id="archive-overlay" class="fullscreen-modal">
         <div class="slate-box">
-            <h1 style="text-align: center;">Tactical Battle Records & Scoreboard</h1>
+            <h1 style="text-align: center;">Tactical Battle Records</h1>
             <table style="width:100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em;">
                 <thead>
                     <tr style="border-bottom: 1px solid #00ff41;">
@@ -68,6 +69,7 @@
         </div>
     </div>
 
+    <!-- STEALTH VAULT INPUT PANEL -->
     <div id="admin-vault" class="fullscreen-modal" style="background: rgba(5,15,5,0.99);">
         <div class="slate-box" style="border-color: #ff0000; color: #ff0000;">
             <h1 style="text-align: center;">LOG CAMPAIGN ENGAGEMENT</h1>
@@ -119,6 +121,7 @@
         </div>
     </div>
 
+    <!-- PLANET HUD -->
     <div id="info-box">
         <div id="faction-label" style="font-size: 0.7em; border: 1px solid #00ff41; padding: 4px; display: inline-block;">STATUS</div>
         <h2 id="planet-name" style="margin: 5px 0;">WORLD</h2>
@@ -134,6 +137,7 @@
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
 
     <script>
+        // CLEAN TYPO-PROOF CHARACTER MAP HARDBAKED
         const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbSRx6a1NB0zlbl1EAEr9rNsf2V9fhiOnU8CeT93uvaJRmIVQ6Mo6pWWGE51WuGi8oN/exec"; 
 
         const PLAYER_ARMIES = {
@@ -156,30 +160,30 @@
         };
 
         let PLANET_DATA = [
-            { name: "Solemnace", dist: 35, size: 2.8, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Initial Necron Crown Core Zone.", initialNeutral: false },
-            { name: "Damnos", dist: 50, size: 2.5, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Tomb World Awakening Array.", initialNeutral: false },
-            { name: "Gidreem", dist: 65, size: 2.3, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Dynastic Resource Core.", initialNeutral: false },
-            { name: "Mars Prime", size: 3.8, dist: 78, color: 0x8B0000, player: "None", army: "None", rule: "Mechanicus Vault Zone. Unoccupied.", initialNeutral: true },
-            { name: "Quintus", dist: 95, size: 2.4, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Perimeter Gauss Outpost.", initialNeutral: false },
-            { name: "T'au Prime", dist: 110, size: 3.2, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Sept World Center Node.", initialNeutral: false },
-            { name: "Vior'la", dist: 125, size: 2.9, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Fire Caste Staging Field.", initialNeutral: false },
-            { name: "Armageddon Core", size: 3.2, dist: 142, color: 0x8B0000, player: "None", army: "None", rule: "Industrial Hive Outpost. Unoccupied.", initialNeutral: true },
-            { name: "Fenris Core", dist: 160, size: 3.1, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Space Wolves Sector Hold.", initialNeutral: false },
-            { name: "Asaheim", dist: 175, size: 2.6, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Fortress Anchor Point.", initialNeutral: false },
-            { name: "Tyran Primus", dist: 190, size: 2.8, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Bio-Mass Consumption Nest.", initialNeutral: false },
-            { name: "Octarius Alpha", dist: 205, size: 3.3, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Hive Fleet Leviathan Spore-Zone.", initialNeutral: false },
-            { name: "Necromunda Sector", size: 3.6, dist: 220, color: 0x8B0000, player: "None", army: "None", rule: "Hive World Perimeter. Unoccupied.", initialNeutral: true },
-            { name: "Nocturne Prime", size: 3.5, dist: 240, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Promethium Reserve: Re-roll one Wound roll of 1 for Melta/Torrent.", initialNeutral: false },
-            { name: "Prometheus", size: 3.2, dist: 255, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Vulkan's Anvil: +1 to armor save metrics against AP-1 weapons.", initialNeutral: false },
-            { name: "Biel-Tan Outpost", size: 4.0, dist: 270, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Way of the Warrior: +1 to Advance rolls.", initialNeutral: false },
-            { name: "Iyanden Anchor", size: 3.3, dist: 285, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Ghost-Warrior Array: Target ignores Battle-Shock.", initialNeutral: false },
-            { name: "Cadia Secundus", size: 3.4, dist: 300, color: 0x8B0000, player: "None", army: "None", rule: "Imperial Bastion Core. Unoccupied.", initialNeutral: true },
-            { name: "Alaitoc Rift", size: 2.7, dist: 320, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Path of the Ranger: Units targeting this world incur -1 to Hit rolls.", initialNeutral: false },
-            { name: "Saim-Hann Reach", size: 3.1, dist: 335, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Wild Rider Charge: Mounted options gain fallback and charge capability.", initialNeutral: false },
-            { name: "Macragge", size: 4.2, dist: 355, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Ultramar Discipline: Re-roll failed Leadership tests.", initialNeutral: false },
-            { name: "Phall", size: 2.9, dist: 375, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Dorn's Bulwark: Stationary Cover bonus matrix.", initialNeutral: false },
-            { name: "Calth", size: 3.4, dist: 315, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Underground Bastions: Detachments receive critical defensive saves.", initialNeutral: false },
-            { name: "Rynn's World", size: 3.0, dist: 415, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Crimson Vengeance: Re-roll hit vectors if numerical disadvantage occurs.", initialNeutral: false }
+            { name: "Solemnace", dist: 35, size: 2.8, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
+            { name: "Damnos", dist: 50, size: 2.5, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
+            { name: "Gidreem", dist: 65, size: 2.3, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
+            { name: "Mars Prime", size: 3.8, dist: 78, color: 0x8B0000, player: "None", army: "None", rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
+            { name: "Quintus", dist: 95, size: 2.4, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
+            { name: "T'au Prime", dist: 110, size: 3.2, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Established T'au Empire Strategic World Hold.", initialNeutral: false },
+            { name: "Vior'la", dist: 125, size: 2.9, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Established T'au Empire Strategic World Hold.", initialNeutral: false },
+            { name: "Armageddon Core", size: 3.2, dist: 142, color: 0x8B0000, player: "None", army: "None", rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
+            { name: "Fenris Core", dist: 160, size: 3.1, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Established Space Wolves Strategic World Hold.", initialNeutral: false },
+            { name: "Asaheim", dist: 175, size: 2.6, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, rule: "Established Space Wolves Strategic World Hold.", initialNeutral: false },
+            { name: "Tyran Primus", dist: 190, size: 2.8, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Established Tyranid Strategic World Hold.", initialNeutral: false },
+            { name: "Octarius Alpha", dist: 205, size: 3.3, player: "Josh", army: "Tyranids", color: 0xFF00FF, rule: "Established Tyranid Strategic World Hold.", initialNeutral: false },
+            { name: "Necromunda Sector", size: 3.6, dist: 220, color: 0x8B0000, player: "None", army: "None", rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
+            { name: "Nocturne Prime", size: 3.5, dist: 240, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Established Salamanders Strategic World Hold.", initialNeutral: false },
+            { name: "Prometheus", size: 3.2, dist: 255, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", rule: "Established Salamanders Strategic World Hold.", initialNeutral: false },
+            { name: "Biel-Tan Outpost", size: 4.0, dist: 270, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
+            { name: "Iyanden Anchor", size: 3.3, dist: 285, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
+            { name: "Cadia Secundus", size: 3.4, dist: 300, color: 0x8B0000, player: "None", army: "None", rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
+            { name: "Alaitoc Rift", size: 2.7, dist: 320, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
+            { name: "Saim-Hann Reach", size: 3.1, dist: 335, color: 0x6A0DAD, player: "Neil", army: "Aeldari", rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
+            { name: "Macragge", size: 4.2, dist: 355, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
+            { name: "Phall", size: 2.9, dist: 375, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
+            { name: "Calth", size: 3.4, dist: 315, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
+            { name: "Rynn's World", size: 3.0, dist: 415, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Established Space Marines Strategic World Hold.", initialNeutral: false }
         ];
 
         let BATTLE_LOGS = [];
@@ -206,12 +210,19 @@
             const winnerFaction = vicChoice === "1" ? f1 : f2;
             const payload = { p1, f1, s1, p2, f2, s2, winner, winnerFaction };
 
-            if (VOX_LINK_URL !== "") {
-                try {
-                    await fetch(VOX_LINK_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
-                } catch(e) {}
-            }
             BATTLE_LOGS.push(payload);
+            localStorage.setItem('AP_CAMPAIGN_BACKUP', JSON.stringify(BATTLE_LOGS));
+
+            // Force dynamic background routing bypass properties
+            try {
+                await fetch(VOX_LINK_URL, { 
+                    method: "POST", 
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify(payload) 
+                });
+            } catch(e) { console.log("Outbound Choke Caught"); }
+            
             processEngagements(BATTLE_LOGS);
             toggleModal('admin-vault');
         }
@@ -219,7 +230,7 @@
         function processEngagements(logs) {
             PLANET_DATA.forEach(p => {
                 if (p.initialNeutral) {
-                    p.player = "None"; p.army = "None"; p.color = 0x8B0000; p.rule = "Territorial System Core Axis. Unoccupied.";
+                    p.player = "None"; p.army = "None"; p.color = 0x8B0000; p.rule = "Frontier Sector. Unoccupied.";
                 }
             });
 
@@ -229,10 +240,10 @@
                     targetPlanet.player = log.winner;
                     targetPlanet.army = log.winnerFaction;
                     targetPlanet.color = FACTION_COLORS[log.winnerFaction];
-                    targetPlanet.rule = `CRITICAL DEPLOYMENT LOG DISCOVERED:\n\n` +
+                    targetPlanet.rule = `CRITICAL DEPLOYMENT ARCHIVE DETECTED:\n\n` +
                                          `ENGAGEMENT: ${log.p1} (${log.f1}) VS ${log.p2} (${log.f2})\n` +
-                                         `WAR MATRIX SCORE: ${String(log.s1)} VP to ${String(log.s2)} VP.\n\n` +
-                                         `The strategic operations of the ${log.winnerFaction} phalanx forced tactical capitulation over their opponents. Fleet presence confirmed.`;
+                                         `WAR MATRIX RECORD: ${String(log.s1)} VP to ${String(log.s2)} VP.\n\n` +
+                                         `The strategic deployments of the ${log.winnerFaction} phalanx forced complete territorial annexation over their opponents. Fleet transit established.`;
                 }
             });
 
@@ -248,7 +259,10 @@
                     }
 
                     const ret = neutralReticles.find(r => r.parent === planetMeshes[idx]);
-                    if(ret && p.player !== "None") planetMeshes[idx].remove(ret);
+                    if(ret) {
+                        if(p.player !== "None") planetMeshes[idx].remove(ret);
+                        else if(!planetMeshes[idx].getObjectById(ret.id)) planetMeshes[idx].add(ret);
+                    }
                 }
             });
 
@@ -263,7 +277,7 @@
                     <td style="padding:8px;">${log.p1} vs ${log.p2}</td>
                     <td style="padding:8px; font-size:0.85em;">${log.f1} vs ${log.f2}</td>
                     <td style="padding:8px; color:#fff;">${log.winner}</td>
-                    <td style="padding:8px;">${String(log.s1)} - ${String(log.s2)}</td>
+                    <td style="padding:8px;">${String(log.s1)} - ${String(log.s2)} VP</td>
                 </tr>
             `).join('') || `<tr><td colspan="4" style="text-align:center; padding:20px; opacity:0.5;">[ NO LOGGED CAMPAIGNS ]</td></tr>`;
         }
@@ -271,21 +285,36 @@
         function updateLeaderboard() {
             const plList = ["Aliks", "Kieran", "Josh", "Neil", "Pat"];
             let scores = plList.map(name => {
-                let planetCount = PLANET_DATA.filter(p => p.player === name).length;
-                return { name, power: planetCount * 10 };
+                let totalVPs = 0;
+                BATTLE_LOGS.forEach(log => {
+                    if (log.p1 === name) totalVPs += Number(log.s1);
+                    if (log.p2 === name) totalVPs += Number(log.s2);
+                });
+                return { name, power: totalVPs };
             }).sort((a,b) => b.power - a.power);
-            document.getElementById('rankings-list').innerHTML = scores.map(s => `<div class="stat-row"><span>${s.name.toUpperCase()}</span> <span>${s.power} PL</span></div>`).join('');
+            
+            document.getElementById('rankings-list').innerHTML = scores.map(s => `<div class="stat-row"><span>${s.name.toUpperCase()}</span> <span>${s.power} VP</span></div>`).join('');
         }
 
         async function syncWarLog() {
+            // Apply defensive initial array parsing from memory stack immediately
+            const fallback = localStorage.getItem('AP_CAMPAIGN_BACKUP');
+            if(fallback) { BATTLE_LOGS = JSON.parse(fallback); processEngagements(BATTLE_LOGS); }
+
             try {
                 const response = await fetch(VOX_LINK_URL);
-                BATTLE_LOGS = await response.json();
-                processEngagements(BATTLE_LOGS);
+                if(response.ok) {
+                    const cloudData = await response.json();
+                    if(cloudData && cloudData.length) {
+                        BATTLE_LOGS = cloudData;
+                        localStorage.setItem('AP_CAMPAIGN_BACKUP', JSON.stringify(BATTLE_LOGS));
+                        processEngagements(BATTLE_LOGS);
+                    }
+                }
                 let reportString = "SYSTEM STATUS: NOMINAL // COGITATOR LINK STABLE // ";
-                const news = BATTLE_LOGS.slice(-3).reverse().map(l => `${l.winnerFaction.toUpperCase()} MANIFESTED SUB-SECTOR POWER ADVANCEMENTS`);
+                const news = BATTLE_LOGS.slice(-3).reverse().map(l => `${l.winnerFaction.toUpperCase()} MANIFESTED FRONTIER TERRITORIAL EXPANSIONS`);
                 document.getElementById('war-log-text').innerText = reportString + (news.length ? news.join(" // ") + " // " : "NO RECENT SECTOR CHANGES // ");
-            } catch (e) {}
+            } catch (e) { console.log("Cloud read stream throttled - relying on persistent cache safely."); }
         }
 
         function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; if (navigator.vibrate) navigator.vibrate(50); } setTimeout(() => tapCount = 0, 3000); }
@@ -438,7 +467,6 @@
             toggleMainUI(true); 
         }
 
-        // --- FIXED TRANSITION LOGIC UNCHOKE ---
         function animate() {
             requestAnimationFrame(animate);
             planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
@@ -449,22 +477,15 @@
             if (isTransitioning) { 
                 camera.position.lerp(targetPos, 0.06); 
                 controls.target.lerp(targetLookAt, 0.06); 
-                // Fix: Release controls seamlessly upon arrival to prevent snapping loops
-                if (camera.position.distanceTo(targetPos) < 1.0) { 
+                if (camera.position.distanceTo(targetPos) < 1.2) { 
                     isTransitioning = false; 
                 } 
             }
             
-            updateFleetTrajectories(); 
-            controls.update(); 
-            renderer.render(scene, camera);
+            updateFleetTrajectories(); controls.update(); renderer.render(scene, camera);
         }
 
-        // Correct bootstrapping order loop to avoid async race condition drops
         updateFactionDropdown(1); updateFactionDropdown(2);
-        updateLeaderboard(); rebuildArchiveTable();
-        
-        // Execute dynamic synchronization after meshes exist
         syncWarLog(); 
         animate();
         setInterval(syncWarLog, 30000);
