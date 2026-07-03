@@ -50,7 +50,6 @@
         <button id="score-toggle" onclick="toggleModal('archive-overlay')">Scoreboard</button>
     </div>
 
-    <!-- SCOREBOARD MODAL -->
     <div id="archive-overlay" class="fullscreen-modal">
         <div class="slate-box">
             <h1 style="text-align: center;">Tactical Battle Records</h1>
@@ -69,7 +68,6 @@
         </div>
     </div>
 
-    <!-- STEALTH VAULT INPUT PANEL -->
     <div id="admin-vault" class="fullscreen-modal" style="background: rgba(5,15,5,0.99);">
         <div class="slate-box" style="border-color: #ff0000; color: #ff0000;">
             <h1 style="text-align: center;">LOG CAMPAIGN ENGAGEMENT</h1>
@@ -121,7 +119,6 @@
         </div>
     </div>
 
-    <!-- PLANET HUD -->
     <div id="info-box">
         <div id="faction-label" style="font-size: 0.7em; border: 1px solid #00ff41; padding: 4px; display: inline-block;">STATUS</div>
         <h2 id="planet-name" style="margin: 5px 0;">WORLD</h2>
@@ -137,7 +134,8 @@
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbyARyzXTBBXKtpAZ6dpPITVECZwhcQkIpHijdp1pnNG1I6WEKSV7qEoanEzZUm9YQTy/exec"; 
+        // PASTE YOUR LATEST DEPLOYMENT WEB APP URL HERE BETWEEN THE QUOTES
+        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbxF7tZcRGBm1b1fFTvDfBOWzRiQSSIdB7qYv38HbsSQW3P1B-gDPBXuj-5KS6KgpzR6/exec"; 
 
         const PLAYER_ARMIES = {
             "Josh": ["Tyranids", "Space Marines (Salamanders)"],
@@ -268,7 +266,6 @@
             `).join('') || `<tr><td colspan="4" style="text-align:center; padding:20px; opacity:0.5;">[ NO LOGGED CAMPAIGNS ]</td></tr>`;
         }
 
-        // --- SYNTAX CLEANUP: REBUILT FIXED MATH AGGREGATION LOOP ---
         function updateLeaderboard() {
             const plList = ["Aliks", "Kieran", "Josh", "Neil", "Pat"];
             let scores = plList.map(name => {
@@ -283,16 +280,32 @@
             document.getElementById('rankings-list').innerHTML = scores.map(s => `<div class="stat-row"><span>${s.name.toUpperCase()}</span> <span>${s.power} VP</span></div>`).join('');
         }
 
+        // --- HARDENED REDIRECT ENGINE (SAVES UPON REFRESH) ---
         async function syncWarLog() {
-            try {
-                const response = await fetch(VOX_LINK_URL);
-                BATTLE_LOGS = await response.json();
+            if (!VOX_LINK_URL || VOX_LINK_URL.includes("YOUR_NEW_GOOGLE")) return;
+            
+            // Re-route the connection through a permitted storage wrapper to dodge the CORS block
+            const proxyUrl = VOX_LINK_URL + (VOX_LINK_URL.includes('?') ? '&' : '?') + 'callback=handleGSheetResponse';
+            
+            const oldScript = document.getElementById('gsheet-jsonp-script');
+            if (oldScript) oldScript.remove();
+            
+            const script = document.createElement('script');
+            script.id = 'gsheet-jsonp-script';
+            script.src = proxyUrl;
+            document.body.appendChild(script);
+        }
+
+        // Dedicated global receiver that processes the redirected database matrix safely
+        window.handleGSheetResponse = function(data) {
+            if (data && Array.isArray(data)) {
+                BATTLE_LOGS = data;
                 processEngagements(BATTLE_LOGS);
                 let reportString = "SYSTEM STATUS: NOMINAL // COGITATOR LINK STABLE // ";
                 const news = BATTLE_LOGS.slice(-3).reverse().map(l => `${l.winnerFaction.toUpperCase()} MANIFESTED FRONTIER EXPANSIONS`);
                 document.getElementById('war-log-text').innerText = reportString + (news.length ? news.join(" // ") + " // " : "NO RECENT SECTOR CHANGES // ");
-            } catch (e) {}
-        }
+            }
+        };
 
         function handleAdminTap() { tapCount++; if(tapCount >= 5) { toggleModal('admin-vault'); tapCount = 0; if (navigator.vibrate) navigator.vibrate(50); } setTimeout(() => tapCount = 0, 3000); }
         function toggleModal(id) { document.getElementById(id).classList.toggle('modal-active'); }
@@ -419,7 +432,6 @@
         }
 
         function animate() {
-            document.getElementById('instructions').style.color = '#004411'; // Keep accessing vault visible
             requestAnimationFrame(animate);
             planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
             atmospheres.forEach(a => { a.rotation.y -= 0.002; }); 
