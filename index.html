@@ -9,7 +9,7 @@
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         @keyframes globalFlicker { 0% { opacity: 0.99; } 5% { opacity: 0.95; } 10% { opacity: 0.98; } 100% { opacity: 1; } }
 
-        body { margin: 0; background: radial-gradient(circle at center, #010c05 0%, #000000 100%); color: #00ff41; font-family: 'Special Elite', monospace; overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite; }
+        body { margin: 0; background: radial-gradient(circle at center, #010a05 0%, #000000 100%); color: #00ff41; font-family: 'Special Elite', monospace; overflow: hidden; touch-action: none; animation: globalFlicker 0.2s infinite; }
         
         /* Premium Retro-Futuristic Scanline Overlay */
         body::before { content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); z-index: 9999; background-size: 100% 4px, 6px 100%; pointer-events: none; }
@@ -26,7 +26,7 @@
         
         .top-btns { position: absolute; bottom: 25px; right: 20px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; z-index: 7500; transition: 0.4s; }
         .top-btns button { font-size: 12px; min-width: 140px; padding: 12px; font-weight: bold; backdrop-filter: blur(8px); }
-        .ui-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(10px); }
+        .ui-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(-10px); }
 
         #info-box { position: absolute; right: 20px; top: 45px; width: 300px; background: rgba(0, 10, 5, 0.65); border: 1px solid #00ff41; padding: 20px; display: none; z-index: 8500; box-shadow: 0 0 25px rgba(0,255,65,0.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         @media (max-width: 600px) { #info-box { width: 90%; left: 5%; right: auto; top: 40px; } }
@@ -139,6 +139,7 @@
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
 
     <script>
+        // --- SECURELY ANCHORED TARGET ENDPOINT ---
         const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbxF7tZcRGBm1b1fFTvDfBOWzRiQSSIdB7qYv38HbsSQW3P1B-gDPBXuj-5KS6KgpzR6/exec"; 
 
         const PLAYER_ARMIES = {
@@ -160,48 +161,36 @@
             "None": 0x8B0000
         };
 
-        // --- FIXED ORIENTATIONS + DYNAMIC REALISTIC SOL-SCALE SIZES ---
         let PLANET_DATA = [
             { name: "Solemnace", dist: 55, size: 2.1, player: "Pat", army: "Necrons", color: 0x00FF41, angle: 0.2, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
-            { name: "Damnos", dist: 75, size: 1.9, player: "Pat", army: "Necrons", color: 0x00FF41, angle: 0.8, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
-            { name: "Gidreem", dist: 95, size: 1.8, player: "Pat", army: "Necrons", color: 0x00FF41, angle: 1.4, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
-            
+            { name: "Damnos", dist: 75, size: 1.9, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Tomb World Awakening Array.", initialNeutral: false },
+            { name: "Gidreem", dist: 65, size: 1.8, player: "Pat", army: "Necrons", color: 0x00FF41, angle: 1.4, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
             { name: "Mars Prime", size: 2.4, dist: 115, color: 0x8B0000, player: "None", army: "None", angle: 2.1, rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
-            
             { name: "Quintus", dist: 135, size: 2.0, player: "Pat", army: "Necrons", color: 0x00FF41, angle: 2.7, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
             { name: "T'au Prime", dist: 160, size: 2.5, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, angle: 3.3, rule: "Established T'au Empire Strategic World Hold.", initialNeutral: false },
-            { name: "Vior'la", dist: 185, size: 2.3, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, angle: 3.9, rule: "Established T'au Empire Strategic World Hold.", initialNeutral: false },
-            
+            { name: "Vior'la", dist: 125, size: 2.3, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, angle: 3.9, rule: "Established T'au Empire Strategic World Hold.", initialNeutral: false },
             { name: "Armageddon Core", size: 3.4, dist: 210, color: 0x8B0000, player: "None", army: "None", angle: 4.4, rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
-            
-            { name: "Fenris Core", dist: 240, size: 3.2, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, angle: 4.9, rule: "Established Space Wolves Strategic World Hold.", initialNeutral: false },
-            { name: "Asaheim", dist: 265, size: 2.9, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, angle: 5.4, rule: "Established Space Wolves Strategic World Hold.", initialNeutral: false },
-            
-            // Gas Giant Scaled Campaign Epicenters
-            { name: "Tyran Primus", dist: 295, size: 5.2, player: "Josh", army: "Tyranids", color: 0xFF00FF, angle: 5.9, rule: "Established Tyranid Strategic World Hold.", initialNeutral: false },
-            { name: "Octarius Alpha", dist: 330, size: 5.5, player: "Josh", army: "Tyranids", color: 0xFF00FF, angle: 0.5, rule: "Established Tyranid Strategic World Hold.", initialNeutral: false },
-            
-            { name: "Necromunda Sector", size: 3.8, dist: 365, color: 0x8B0000, player: "None", army: "None", angle: 1.1, rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
-            
-            { name: "Nocturne Prime", size: 4.6, dist: 400, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", angle: 1.7, rule: "Established Salamanders Strategic World Hold.", initialNeutral: false },
-            { name: "Prometheus", size: 4.2, dist: 430, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", angle: 2.2, rule: "Established Salamanders Strategic World Hold.", initialNeutral: false },
-            
-            { name: "Biel-Tan Outpost", size: 4.4, dist: 465, color: 0x6A0DAD, player: "Neil", army: "Aeldari", angle: 2.8, rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
-            { name: "Iyanden Anchor", size: 4.0, dist: 495, color: 0x6A0DAD, player: "Neil", army: "Aeldari", angle: 3.4, rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
-            
-            { name: "Cadia Secundus", size: 3.6, dist: 525, color: 0x8B0000, player: "None", army: "None", angle: 4.0, rule: "Imperial Bastion Core. Unoccupied.", initialNeutral: true },
-            
-            { name: "Alaitoc Rift", size: 3.9, dist: 555, color: 0x6A0DAD, player: "Neil", army: "Aeldari", angle: 4.5, rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
-            { name: "Saim-Hann Reach", size: 4.1, dist: 585, color: 0x6A0DAD, player: "Neil", army: "Aeldari", angle: 5.1, rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
-            { name: "Macragge", size: 4.8, dist: 620, color: 0x0000FF, player: "Aliks", army: "Space Marines", angle: 5.6, rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
-            { name: "Phall", size: 3.3, dist: 650, color: 0x0000FF, player: "Aliks", army: "Space Marines", angle: 6.0, rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
-            { name: "Calth", size: 3.7, dist: 680, color: 0x0000FF, player: "Aliks", army: "Space Marines", angle: 0.3, rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
-            { name: "Rynn's World", size: 3.5, dist: 710, color: 0x0000FF, player: "Aliks", army: "Space Marines", angle: 1.0, rule: "Established Space Marines Strategic World Hold.", initialNeutral: false }
+            { name: "Fenris Core", dist: 160, size: 3.2, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, angle: 4.9, rule: "Established Space Wolves Strategic World Hold.", initialNeutral: false },
+            { name: "Asaheim", dist: 175, size: 2.6, player: "Kieran", army: "Space Marines (Space Wolves)", color: 0xB0C4DE, angle: 5.4, rule: "Established Space Wolves Strategic World Hold.", initialNeutral: false },
+            { name: "Tyran Primus", dist: 190, size: 5.2, player: "Josh", army: "Tyranids", color: 0xFF00FF, angle: 5.9, rule: "Bio-Mass Consumption Nest.", initialNeutral: false },
+            { name: "Octarius Alpha", dist: 230, size: 5.5, player: "Josh", army: "Tyranids", color: 0xFF00FF, angle: 0.5, rule: "Hive Fleet Leviathan Spore-Zone.", initialNeutral: false },
+            { name: "Necromunda Sector", size: 3.8, dist: 265, color: 0x8B0000, player: "None", army: "None", angle: 1.1, rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
+            { name: "Nocturne Prime", size: 4.6, dist: 300, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", angle: 1.7, rule: "Established Salamanders Strategic World Hold.", initialNeutral: false },
+            { name: "Prometheus", size: 4.2, dist: 335, color: 0x228B22, player: "Josh", army: "Space Marines (Salamanders)", angle: 2.2, rule: "Established Salamanders Strategic World Hold.", initialNeutral: false },
+            { name: "Biel-Tan Outpost", size: 4.4, dist: 370, color: 0x6A0DAD, player: "Neil", army: "Aeldari", angle: 2.8, rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
+            { name: "Iyanden Anchor", size: 4.0, dist: 405, color: 0x6A0DAD, player: "Neil", army: "Aeldari", angle: 3.4, rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
+            { name: "Cadia Secundus", size: 3.6, dist: 440, color: 0x8B0000, player: "None", army: "None", angle: 4.0, rule: "Imperial Bastion Core. Unoccupied.", initialNeutral: true },
+            { name: "Alaitoc Rift", size: 3.9, dist: 475, color: 0x6A0DAD, player: "Neil", army: "Aeldari", angle: 4.5, rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
+            { name: "Saim-Hann Reach", size: 4.1, dist: 510, color: 0x6A0DAD, player: "Neil", army: "Aeldari", angle: 5.1, rule: "Established Aeldari Strategic World Hold.", initialNeutral: false },
+            { name: "Macragge", size: 4.8, dist: 550, color: 0x0000FF, player: "Aliks", army: "Space Marines", angle: 5.6, rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
+            { name: "Phall", size: 3.3, dist: 590, color: 0x0000FF, player: "Aliks", army: "Space Marines", angle: 6.0, rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
+            { name: "Calth", size: 3.7, dist: 630, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Established Space Marines Strategic World Hold.", initialNeutral: false },
+            { name: "Rynn's World", size: 3.5, dist: 670, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Established Space Marines Strategic World Hold.", initialNeutral: false }
         ];
 
         let BATTLE_LOGS = [];
         let adminKeySequence = "", tapCount = 0, isZoomed = false, isTransitioning = false;
-        let targetPos = new THREE.Vector3(0, 650, 1100), targetLookAt = new THREE.Vector3(0, 0, 0);
+        let targetPos = new THREE.Vector3(0, 400, 700), targetLookAt = new THREE.Vector3(0, 0, 0);
         let fleetLayer = new THREE.Group(), activeFleets = [];
 
         function updateFactionDropdown(id) {
@@ -331,14 +320,14 @@
         scene.add(fleetLayer);
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        camera.position.set(0, 650, 1100); controls.enableDamping = true;
-        scene.add(new THREE.AmbientLight(0x446644, 0.8));
+        camera.position.set(0, 400, 700); controls.enableDamping = true;
+        scene.add(new THREE.AmbientLight(0x335533, 0.8));
         
-        const rimScannerLight = new THREE.DirectionalLight(0xffffff, 2.0);
-        rimScannerLight.position.set(8, 15, 10); scene.add(rimScannerLight);
-
-        // --- UPGRADE: ENHANCED INDUSTRIAL SOLAR STAR CORE MESH ---
-        const sunLight = new THREE.PointLight(0xffaa44, 6, 3000); scene.add(sunLight);
+        const rimScannerLight = new THREE.DirectionalLight(0xffffff, 1.8);
+        rimScannerLight.position.set(5, 12, 8); scene.add(rimScannerLight);
+        
+        // Brilliant Solar Star Core Mesh Overhaul
+        const coreLight = new THREE.PointLight(0xffaa44, 6, 3000); scene.add(coreLight);
         const sunMesh = new THREE.Mesh(
             new THREE.SphereGeometry(28, 32, 32), 
             new THREE.MeshBasicMaterial({ color: 0xff7700, wireframe: false })
@@ -346,10 +335,9 @@
         sunMesh.add(new THREE.Mesh(new THREE.SphereGeometry(28.8, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true, transparent: true, opacity: 0.25 })));
         scene.add(sunMesh);
 
-        // --- UPGRADE: FAINT SCI-FI SECTOR STRATEGIC GROUND GRID ---
+        // Sci-Fi Sector Tactical Ground Grid
         const tacticalGrid = new THREE.GridHelper(1500, 40, 0x00ff41, 0x003311);
-        tacticalGrid.position.y = -10;
-        tacticalGrid.material.opacity = 0.15; tacticalGrid.material.transparent = true;
+        tacticalGrid.position.y = -10; tacticalGrid.material.opacity = 0.15; tacticalGrid.material.transparent = true;
         scene.add(tacticalGrid);
 
         const planetMeshes = [], planetGroups = [], neutralReticles = [], atmospheres = [];
@@ -374,38 +362,35 @@
             sprite.name = "holoLabel"; sprite.scale.set(22, 7, 1); return sprite;
         }
 
-        // Generate stationary map matrix layers elements
         PLANET_DATA.forEach((data) => {
             const group = new THREE.Group(); scene.add(group); planetGroups.push(group);
             
-            const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.5, data.dist + 0.5, 64), new THREE.MeshBasicMaterial({ color: 0x00ff55, transparent: true, opacity: 0.05, side: THREE.DoubleSide }));
+            const ring = new THREE.Mesh(new THREE.RingGeometry(data.dist - 0.5, data.dist + 0.5, 64), new THREE.MeshBasicMaterial({ color: 0x00ff55, transparent: true, opacity: 0.08, side: THREE.DoubleSide }));
             ring.rotation.x = Math.PI / 2; scene.add(ring);
 
             const tex = generateNoiseTexture(data.color);
-            const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ map: tex, bumpMap: tex, color: data.color, emissive: data.color, emissiveIntensity: (data.player === "None" ? 0.6 : 0.35), roughness: 0.5, metalness: 0.2 }));
+            const pMesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ map: tex, bumpMap: tex, color: data.color, emissive: data.color, emissiveIntensity: (data.player === "None" ? 0.6 : 0.4), roughness: 0.6, metalness: 0.1 }));
             pMesh.userData = data;
 
-            const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.08, 16, 16), new THREE.MeshPhongMaterial({ color: data.color, transparent: true, opacity: 0.12, wireframe: true }));
+            const cloud = new THREE.Mesh(new THREE.SphereGeometry(data.size * 1.08, 16, 16), new THREE.MeshPhongMaterial({ color: data.color, transparent: true, opacity: 0.15, wireframe: true }));
             pMesh.add(cloud); atmospheres.push(cloud);
 
             const labelSprite = createLabelSprite(data.player.toUpperCase(), data.color);
-            labelSprite.position.y = data.size + 5.5; pMesh.add(labelSprite);
+            labelSprite.position.y = data.size + 3.5; pMesh.add(labelSprite);
 
             if (data.player === "None") {
                 const ret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.OctahedronGeometry(data.size * 1.5, 0)), new THREE.LineBasicMaterial({ color: 0xFF0000, transparent: true, opacity: 0.4 }));
                 pMesh.add(ret); neutralReticles.push(ret);
             }
-            
-            // Fixed angular math plot instead of animated loop ticks
             pMesh.position.x = Math.cos(data.angle) * data.dist;
             pMesh.position.z = Math.sin(data.angle) * data.dist;
             group.add(pMesh); planetMeshes.push(pMesh);
         });
 
-        const starGeo = new THREE.BufferGeometry(); const starCount = 450; const starPositions = new Float32Array(starCount * 3);
-        for(let i=0; i<starCount*3; i+=3) { starPositions[i] = (Math.random() - 0.5) * 2500; starPositions[i+1] = (Math.random() - 0.5) * 2500; starPositions[i+2] = (Math.random() - 0.5) * 2500; }
+        const starGeo = new THREE.BufferGeometry(); const starCount = 350; const starPositions = new Float32Array(starCount * 3);
+        for(let i=0; i<starCount*3; i+=3) { starPositions[i] = (Math.random() - 0.5) * 1600; starPositions[i+1] = (Math.random() - 0.5) * 1600; starPositions[i+2] = (Math.random() - 0.5) * 1600; }
         starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.8, transparent: true, opacity: 0.3 })));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.5, transparent: true, opacity: 0.25 })));
 
         function initFleets(logs) {
             fleetLayer.clear(); activeFleets = [];
@@ -442,7 +427,7 @@
             if (intersects.length > 0) {
                 const obj = intersects[0].object; const p = obj.userData; selectedPlanet = p.name;
                 const worldPos = new THREE.Vector3(); obj.getWorldPosition(worldPos);
-                targetLookAt.copy(worldPos); targetPos.set(worldPos.x + 35, worldPos.y + 25, worldPos.z + 35);
+                targetLookAt.copy(worldPos); targetPos.set(worldPos.x + 22, worldPos.y + 14, worldPos.z + 22);
                 isZoomed = true; isTransitioning = true; toggleMainUI(false); 
                 document.getElementById('info-box').style.display = 'block'; document.getElementById('reset-view').style.display = 'block';
                 document.getElementById('planet-name').innerText = p.name.toUpperCase(); document.getElementById('planet-rule').innerText = p.rule;
@@ -452,21 +437,23 @@
 
         function resetSectorView() { 
             isZoomed = false; isTransitioning = true; 
-            targetPos.set(0, 650, 1100); targetLookAt.set(0, 0, 0); 
+            targetPos.set(0, 400, 700); targetLookAt.set(0, 0, 0); 
             document.getElementById('info-box').style.display = 'none'; document.getElementById('reset-view').style.display = 'none'; 
             toggleMainUI(true); 
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            atmospheres.forEach(a => { a.rotation.y -= 0.001; }); 
-            neutralReticles.forEach(r => { r.rotation.y += 0.005; r.material.opacity = 0.3 + Math.random() * 0.3; });
+            atmospheres.forEach(a => { a.rotation.y -= 0.002; }); 
+            neutralReticles.forEach(r => { r.rotation.y += 0.008; r.material.opacity = 0.3 + Math.random() * 0.3; });
             planetMeshes.forEach(mesh => { const sprite = mesh.getObjectByName("holoLabel"); if(sprite) sprite.quaternion.copy(camera.quaternion); });
             
             if (isTransitioning) { 
                 camera.position.lerp(targetPos, 0.06); 
                 controls.target.lerp(targetLookAt, 0.06); 
-                if (camera.position.distanceTo(targetPos) < 2.0) { isTransitioning = false; } 
+                if (camera.position.distanceTo(targetPos) < 2.0) { 
+                    isTransitioning = false; 
+                } 
             }
             updateFleetTrajectories(); controls.update(); renderer.render(scene, camera);
         }
