@@ -137,8 +137,7 @@
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // PASTE YOUR LATEST DEPLOYMENT WEB APP URL STRINGS SECURELY HERE BETWEEN THE QUOTES
-        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbw13A7sJpq0PiOnmW6JaCUGtGJMtYLmIK8k44wUZ0NVBxE5nZ7YC-gD37YBqakMlWxj/exec"; 
+        const VOX_LINK_URL = "https://script.google.com/macros/s/AKfycbSRx6a1NB0zlbl1EAEr9rNsf2V9fhiOnU8CeT93uvaJRmIVQ6Mo6pWWGE51WuGi8oN/exec"; 
 
         const PLAYER_ARMIES = {
             "Josh": ["Tyranids", "Space Marines (Salamanders)"],
@@ -160,10 +159,10 @@
         };
 
         let PLANET_DATA = [
-            { name: "Solemnace", dist: 35, size: 2.8, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Initial Necron Crown Core Zone.", initialNeutral: false },
+            { name: "Solemnace", dist: 35, size: 2.8, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Established Necron Strategic World Hold.", initialNeutral: false },
             { name: "Damnos", dist: 50, size: 2.5, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Tomb World Awakening Array.", initialNeutral: false },
             { name: "Gidreem", dist: 65, size: 2.3, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Dynastic Resource Core.", initialNeutral: false },
-            { name: "Mars Prime", size: 3.8, dist: 78, color: 0x8B0000, player: "None", army: "None", rule: "Mechanicus Vault Zone. Unoccupied.", initialNeutral: true },
+            { name: "Mars Prime", size: 3.8, dist: 78, color: 0x8B0000, player: "None", army: "None", rule: "Frontier Sector. Unoccupied.", initialNeutral: true },
             { name: "Quintus", dist: 95, size: 2.4, player: "Pat", army: "Necrons", color: 0x00FF41, rule: "Perimeter Gauss Outpost.", initialNeutral: false },
             { name: "T'au Prime", dist: 110, size: 3.2, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Sept World Center Node.", initialNeutral: false },
             { name: "Vior'la", dist: 125, size: 2.9, player: "Kieran", army: "T'au Empire", color: 0xEEEEEE, rule: "Fire Caste Staging Field.", initialNeutral: false },
@@ -186,6 +185,11 @@
             { name: "Rynn's World", size: 3.0, dist: 415, color: 0x0000FF, player: "Aliks", army: "Space Marines", rule: "Crimson Vengeance: Re-roll hit vectors if numerical disadvantage occurs.", initialNeutral: false }
         ];
 
+        let BATTLE_LOGS = [];
+        let adminKeySequence = "", tapCount = 0, isZoomed = false, isTransitioning = false;
+        let targetPos = new THREE.Vector3(0, 400, 700), targetLookAt = new THREE.Vector3(0, 0, 0);
+        let fleetLayer = new THREE.Group(), activeFleets = [];
+
         function updateFactionDropdown(id) {
             const player = document.getElementById(`p${id}-select`).value;
             const select = document.getElementById(`f${id}-select`);
@@ -195,10 +199,10 @@
         async function commitBattleResult() {
             const p1 = document.getElementById('p1-select').value;
             const f1 = document.getElementById('f1-select').value;
-            const s1 = parseInt(document.getElementById('p1-score').value);
+            const s1 = parseInt(document.getElementById('p1-score').value) || 0;
             const p2 = document.getElementById('p2-select').value;
             const f2 = document.getElementById('f2-select').value;
-            const s2 = parseInt(document.getElementById('p2-score').value);
+            const s2 = parseInt(document.getElementById('p2-score').value) || 0;
             const vicChoice = document.getElementById('victor-select').value;
 
             const winner = vicChoice === "1" ? p1 : p2;
@@ -264,18 +268,18 @@
             `).join('') || `<tr><td colspan="4" style="text-align:center; padding:20px; opacity:0.5;">[ NO LOGGED CAMPAIGNS ]</td></tr>`;
         }
 
+        // --- SYNTAX CLEANUP: REBUILT FIXED MATH AGGREGATION LOOP ---
         function updateLeaderboard() {
             const plList = ["Aliks", "Kieran", "Josh", "Neil", "Pat"];
             let scores = plList.map(name => {
                 let totalVPs = 0;
                 BATTLE_LOGS.forEach(log => {
-                    if (log.winner === name) {
-                        if (log.winner === log.p1) totalVPs += Number(log.s1);
-                        else totalVPs += Number(log.s2);
-                    }
+                    if (log.p1 === name) totalVPs += Number(log.s1) || 0;
+                    if (log.p2 === name) totalVPs += Number(log.s2) || 0;
                 });
                 return { name, power: totalVPs };
             }).sort((a,b) => b.power - a.power);
+            
             document.getElementById('rankings-list').innerHTML = scores.map(s => `<div class="stat-row"><span>${s.name.toUpperCase()}</span> <span>${s.power} VP</span></div>`).join('');
         }
 
@@ -415,6 +419,7 @@
         }
 
         function animate() {
+            document.getElementById('instructions').style.color = '#004411'; // Keep accessing vault visible
             requestAnimationFrame(animate);
             planetGroups.forEach((g) => { g.rotation.y += g.userData.orbitalSpeed; }); 
             atmospheres.forEach(a => { a.rotation.y -= 0.002; }); 
@@ -424,7 +429,6 @@
             if (isTransitioning) { 
                 camera.position.lerp(targetPos, 0.06); 
                 controls.target.lerp(targetLookAt, 0.06); 
-                // CRITICAL FIX: Explicit break condition to unlatch the transition engine loop smoothly upon placement arrival
                 if (camera.position.distanceTo(targetPos) < 2.0) { 
                     isTransitioning = false; 
                 } 
